@@ -44,7 +44,7 @@ export function ProgressBridge(){
    if(!snapshot.exists())return;
    const saved=snapshot.data() as Progress;const cleaned:Progress={};
    for(const k of ["estimate","checked","challenges","pre","post"] as const){
-    if(saved[k]!==undefined)(cleaned as Record<string,unknown>)[k]=saved[k];
+    if(saved[k]!==undefined)(cleaned as unknown as Record<string,unknown>)[k]=saved[k];
    }
    try{localStorage.setItem("wwe-progress-user-"+user.uid,JSON.stringify(cleaned));emit();}catch{}
   },()=>{window.dispatchEvent(new CustomEvent("wwe-sync",{detail:"failed"}));});
