@@ -2,7 +2,7 @@
 import Link from "next/link";
 import {usePathname} from "next/navigation";
 import {useEffect,useState} from "react";
-import {Droplets,Menu,X,Languages,Waves,UserRound,Shield,ArrowLeft,ArrowRight,ArrowUpRight,Leaf,BookOpen,Target,FileText} from "lucide-react";
+import {Droplets,Menu,X,Languages,Waves,UserRound,Shield,ArrowLeft,ArrowRight,ArrowUpRight,Leaf,BookOpen,Target,FileText,ShieldCheck,LogOut} from "lucide-react";
 import {Lang,t} from "@/lib/content";
 import {useAuth} from "./auth-provider";
 import {ScrollReveal} from "./scroll-reveal";
@@ -10,11 +10,22 @@ import {RouteMotion} from "./route-motion";
 export function SiteShell({lang,children}:{lang:Lang;children:React.ReactNode}){
  const [open,setOpen]=useState(false);
  const path=usePathname(),tr=t[lang],other=lang==="ar"?"en":"ar",ar=lang==="ar",Arrow=ar?ArrowLeft:ArrowRight;
- const {user,profile}=useAuth();
+ const {user,profile,logout}=useAuth();
  const picture=user?.providerData.find(p=>p.providerId==="google.com")?.photoURL||user?.photoURL;
  useEffect(()=>{document.documentElement.lang=lang;document.documentElement.dir=ar?"rtl":"ltr";},[lang,ar]);
  useEffect(()=>{setOpen(false);},[path]);
  const links=[["",tr.nav.home],["tools",tr.nav.tools],["learn",tr.nav.learn],["challenges",tr.nav.challenges],["research",tr.nav.research],["about",tr.nav.team]] as const;
+ if(path==="/"+lang+"/manage")return <div className="site ww-admin-site" dir={ar?"rtl":"ltr"} lang={lang}>
+   <header className="adm-site-header"><div className="adm-site-header-inner">
+    <Link href={"/"+lang+"/manage"} className="adm-site-brand"><span><ShieldCheck size={24}/></span><strong>WaterWise <em>Control</em></strong></Link>
+    <span className="adm-workspace-label">{ar?"مساحة إدارة خاصة":"PRIVATE ADMIN WORKSPACE"}</span>
+    <nav className="adm-site-nav" aria-label={ar?"روابط الإدارة":"Admin links"}>
+     <Link href={"/"+(ar?"en":"ar")+"/manage"}>{ar?"English":"العربية"}</Link>
+     <Link href={"/"+lang}>{ar?"الموقع الرئيسي":"Public website"}</Link>
+     {user&&<button type="button" onClick={()=>void logout()}><LogOut size={16}/>{ar?"خروج":"Sign out"}</button>}
+    </nav>
+   </div></header><main id="main-content" className="adm-site-main">{children}</main>
+  </div>;
  return <div className="site" dir={ar?"rtl":"ltr"} lang={lang}>
   <ScrollReveal path={path}/><RouteMotion/>
   <div className="announcement"><Waves size={15}/><span>{ar?"المياه مورد مشترك، وكل عادة صغيرة ممكن تبدأ فرق.":"Water is a shared resource. Change starts with small habits."}</span></div>

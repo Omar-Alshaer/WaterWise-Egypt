@@ -1,43 +1,119 @@
 "use client";
-import {useState} from "react";
-import {getIdTokenResult,getIdToken} from "firebase/auth";
-import {BarChart3,ShieldAlert,Users,Trophy,ClipboardCheck,GraduationCap,RefreshCw,LockKeyhole} from "lucide-react";
+import {useCallback,useEffect,useState} from "react";
+import Link from "next/link";
+import {getIdToken,getIdTokenResult} from "firebase/auth";
+import {Activity,BarChart3,CalendarDays,CheckCircle2,ChevronLeft,ChevronRight,ClipboardCheck,Clock3,Download,Eye,GraduationCap,KeyRound,LockKeyhole,RefreshCw,Search,ShieldAlert,ShieldCheck,ShieldOff,TrendingUp,Trophy,UserRound,Users,X} from "lucide-react";
 import {useAuth} from "./auth-provider";
 import type {Lang} from "@/lib/content";
-type AdminData={
- sampledUsers:number;hasMoreUsers:boolean;
- totals:{checks:number;challenges:number;estimateCount:number;preCount:number;postCount:number;avgPre:number|null;avgPost:number|null};
- users:{uid:string;email:string;name:string;createdAt:string;lastSignIn:string;emailVerified:boolean;disabled:boolean;provider:string[]}[];
-};
+type Progress={estimate:number|null;checked:string[];challenges:string[];pre:number|null;post:number|null;updatedAt:string};
+type UserRow={uid:string;name:string;email:string;createdAt:string;lastSignIn:string;lastRefresh:string;emailVerified:boolean;disabled:boolean;providers:string[];isAdmin:boolean;photoURL:string;progress?:Progress};
+type Stats={scannedUsers:number;complete:boolean;scanLimit:number;generatedAt:string;accounts:{total:number;verified:number;disabled:number;admins:number;google:number;password:number;signedIn7:number;signedIn30:number;registered7:number;registered30:number};activity:{progressAccounts:number;checks:number;challenges:number;estimateCount:number;preCount:number;postCount:number;pairedCount:number;avgPre:number|null;avgPost:number|null;avgPairedGain:number|null;completed:number[]};registrationsByMonth:{label:string;count:number}[]};
+type UserList={users:UserRow[];nextCursor:string|null;exactMatch:boolean};
+type Detail={user:UserRow;profile:{displayName:string;email:string;phone:string;phoneVerified:boolean;consentVersion:string};progress:Progress;viewerUid:string};
+type Audit={id:string;actorUid:string;actorEmail:string;targetUid:string;action:string;status:string;at:string};
+type Tab="overview"|"users"|"audit";
+type Action="disable"|"enable"|"revoke";
+const T=(ar:boolean,a:string,en:string)=>ar?a:en;
+const date=(v:string,lang:Lang)=>{const d=new Date(v);return !v||Number.isNaN(d.getTime())?"—":new Intl.DateTimeFormat(lang==="ar"?"ar-EG":"en-GB",{dateStyle:"medium",timeStyle:"short"}).format(d);};
+const score=(n:number|null)=>n===null?"—":n+"/5";
+const activityNames:Record<string,{ar:string;en:string}>={"tap-off":{ar:"إغلاق الحنفية",en:"Turn off tap"},shower:{ar:"تقليل وقت الدش",en:"Shorter shower"},leak:{ar:"فحص التسريب",en:"Check leaks"},"full-load":{ar:"الغسيل الكامل",en:"Full laundry load"},tap:{ar:"الحنفية",en:"Tap"},toilet:{ar:"المرحاض",en:"Toilet"},pipes:{ar:"المواسير",en:"Pipes"},meter:{ar:"العداد",en:"Meter"}};
+function Stat({title,value,icon:Icon}:{title:string;value:string|number;icon:typeof Users}){return <article className="adm-stat"><span className="adm-stat-icon"><Icon size={21}/></span><strong>{value}</strong><span>{title}</span></article>;}
 export function AdminDashboard({lang}:{lang:Lang}){
- const ar=lang==="ar";const {user,initializing}=useAuth();
- const [status,setStatus]=useState<"idle"|"loading"|"done"|"error">("idle");
- const [message,setMessage]=useState("");
- const [data,setData]=useState<AdminData|null>(null);
- const load=async()=>{
-  if(!user)return;
-  setStatus("loading");setMessage("");
-  try{
-   const result=await getIdTokenResult(user,true);
-   if(result.claims.admin!==true)throw new Error(ar?"الحساب ليس لديه صلاحية الإدارة.":"This account has no administrator permission.");
-   const token=await getIdToken(user);
-   const response=await fetch("/api/admin/overview",{headers:{Authorization:"Bearer "+token},cache:"no-store"});
-   if(!response.ok)throw new Error(response.status===503?(ar?"لسه في إعداد مطلوب لتشغيل لوحة الإدارة.":"An administrator setting is still missing."):ar?"تعذّر تحميل التقرير، تحقق من الصلاحيات.":"Cannot load report. Check admin permissions.");
-   setData(await response.json() as AdminData);setStatus("done");
-  }catch(e){setMessage(e instanceof Error?e.message:"Request failed");setStatus("error");}
+ const ar=lang==="ar",fmt=(n:number)=>n.toLocaleString(ar?"ar-EG":"en-US");
+ const {user,initializing}=useAuth();
+ const [tab,setTab]=useState<Tab>("overview"),[stats,setStats]=useState<Stats|null>(null),[list,setList]=useState<UserList|null>(null),[audit,setAudit]=useState<Audit[]|null>(null),[detail,setDetail]=useState<Detail|null>(null);
+ const [cursor,setCursor]=useState(""),[history,setHistory]=useState<string[]>([]),[searchInput,setSearchInput]=useState(""),[query,setQuery]=useState(""),[limit,setLimit]=useState(25);
+ const [busy,setBusy]=useState(""),[error,setError]=useState(""),[permission,setPermission]=useState<"checking"|"granted"|"denied">("checking"),[confirm,setConfirm]=useState<Action|null>(null);
+ const request=useCallback(async <R,>(url:string,method="GET",body?:object):Promise<R>=>{
+  if(!user)throw new Error(T(ar,"سجّل الدخول أولًا.","Sign in first."));
+  const claims=await getIdTokenResult(user,true);
+  if(claims.claims.admin!==true)throw new Error(T(ar,"حسابك مش مخوّل لإدارة الموقع.","Your account has no administrator access."));
+  const token=await getIdToken(user);
+  const response=await fetch(url,{method,cache:"no-store",headers:{Authorization:"Bearer "+token,...(body?{"Content-Type":"application/json"}:{})},body:body?JSON.stringify(body):undefined});
+  const payload=await response.json().catch(()=>({error:"Invalid response"}));
+  if(!response.ok)throw new Error(response.status===403?T(ar,"الإجراء ده غير مسموح.","This action is forbidden."):response.status===503?T(ar,"خدمة الإدارة مش مهيأة.","Admin service is not configured."):String(payload.error||"Request failed"));
+  return payload as R;
+ },[user,ar]);
+ const loadStats=useCallback(async()=>{setBusy("stats");setError("");try{setStats(await request<Stats>("/api/admin/overview"));setPermission("granted");}catch(e){setError(e instanceof Error?e.message:"Error");setPermission("denied");}finally{setBusy(x=>x==="stats"?"":x);}},[request]);
+ const loadUsers=useCallback(async(c="",q="",size=25)=>{setBusy("users");setError("");try{
+  const p=new URLSearchParams({limit:String(size)});if(c)p.set("cursor",c);if(q)p.set("q",q);
+  setList(await request<UserList>("/api/admin/users?"+p.toString()));setCursor(c);
+ }catch(e){setError(e instanceof Error?e.message:"Error");}finally{setBusy(x=>x==="users"?"":x);}},[request]);
+ const loadAudit=useCallback(async()=>{setBusy("audit");setError("");try{const a=await request<{events:Audit[]}>("/api/admin/audit");setAudit(a.events);}catch(e){setError(e instanceof Error?e.message:"Error");}finally{setBusy(x=>x==="audit"?"":x);}},[request]);
+ useEffect(()=>{if(initializing||!user)return;void loadStats();void loadUsers("","",25);},[user?.uid,initializing,loadStats,loadUsers]);
+ const changeTab=(next:Tab)=>{setTab(next);setError("");if(next==="audit"&&audit===null)void loadAudit();};
+ const openDetail=async(uid:string)=>{setBusy("detail");setError("");setConfirm(null);try{setDetail(await request<Detail>("/api/admin/users/"+encodeURIComponent(uid)));}catch(e){setError(e instanceof Error?e.message:"Error");}finally{setBusy(x=>x==="detail"?"":x);}};
+ const performAction=async()=>{if(!detail||!confirm)return;setBusy("action");setError("");try{
+  await request("/api/admin/users/"+encodeURIComponent(detail.user.uid),"PATCH",{action:confirm});
+  setDetail(await request<Detail>("/api/admin/users/"+encodeURIComponent(detail.user.uid)));setConfirm(null);
+  await loadUsers(cursor,query,limit);
+ }catch(e){setError(e instanceof Error?e.message:"Action failed");}finally{setBusy(x=>x==="action"?"":x);}};
+ const next=()=>{if(!list?.nextCursor||query)return;setHistory(h=>[...h,cursor]);void loadUsers(list.nextCursor||"",query,limit);};
+ const previous=()=>{if(!history.length)return;const c=history[history.length-1];setHistory(h=>h.slice(0,-1));void loadUsers(c,query,limit);};
+ const lookup=()=>{const q=searchInput.trim();setHistory([]);setQuery(q);void loadUsers("",q,limit);};
+ const changeSize=(v:number)=>{setLimit(v);setHistory([]);void loadUsers("",query,v);};
+ const csv=()=>{if(!list?.users.length)return;
+  const data=[["uid","name","email","createdAt","lastSignIn","emailVerified","disabled","challenges","checks","pre","post","estimate"],...list.users.map(u=>[u.uid,u.name,u.email,u.createdAt,u.lastSignIn,String(u.emailVerified),String(u.disabled),String(u.progress?.challenges.length||0),String(u.progress?.checked.length||0),String(u.progress?.pre??""),String(u.progress?.post??""),String(u.progress?.estimate??"")])];
+  const safe=(v:string)=>'"'+v.replace(/^[=+\-@]/,"'$&").replace(/"/g,'""')+'"';
+  const object=new Blob(["\uFEFF"+data.map(row=>row.map(safe).join(",")).join("\r\n")],{type:"text/csv;charset=utf-8"});
+  const url=URL.createObjectURL(object),link=document.createElement("a");link.href=url;link.download="waterwise-admin-page-"+(history.length+1)+".csv";document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url);
  };
- if(initializing)return <div className="panel"><RefreshCw size={20}/>{ar?"جاري التحقق...":"Checking session..."}</div>;
- if(!user)return <div className="panel empty-state"><LockKeyhole size={28}/><h2>{ar?"سجل الدخول أولًا":"Sign in first"}</h2><p>{ar?"لوحة الإدارة لا تسمح بالدخول المجهول.":"Admin reports require an authenticated account."}</p></div>;
- return <div className="stack">
- <div className="panel"><span className="tag"><ShieldAlert size={15}/>{ar?"لوحة مقيدة":"Restricted access"}</span><h2 style={{marginTop:15}}>{ar?"التقارير الإدارية":"Administration reports"}</h2><p className="muted small">{ar?"التقرير متاح للمشرفين المصرّح لهم فقط، وبنراجع صلاحيتك في كل طلب. البيانات المعروضة لعينة لا تتجاوز أول 100 حساب لتقليل التكلفة.":"Only authorized administrators can view this report. Your access is checked on every request. Reports are based on the first 100 accounts to control costs."}</p><button className="btn btn-primary" disabled={status==="loading"} onClick={load}><RefreshCw size={17}/>{status==="loading"?(ar?"تحميل...":"Loading..."):ar?"تحميل تقرير الحسابات":"Load account report"}</button>{message&&<p className="notice warning" role="alert" style={{marginTop:15}}>{message}</p>}</div>
- {data&&<><div className="metric-grid">
- {[
-  {v:data.sampledUsers,title:ar?"حسابات ضمن العينة":"Sample accounts",I:Users},
-  {v:data.totals.checks,title:ar?"فحوص مسجلة ذاتيًا":"Self-reported checks",I:ClipboardCheck},
-  {v:data.totals.challenges,title:ar?"تحديات مسجلة":"Reported challenges",I:Trophy}
- ].map(({v,title,I})=><div className="metric-card" key={title}><I size={23}/><strong>{v}</strong><span>{title}</span></div>)}
- </div><div className="panel"><h2><GraduationCap size={23} style={{verticalAlign:"middle"}}/> {ar?"متوسط نتائج الاختبارات":"Average quiz scores"}</h2><p className="muted">{ar?"النتائج الآتية معرفة مُختبرة، مش وفر مياه مقاس.":"These are knowledge-test scores, not verified water savings."}</p><div className="metric-grid" style={{gridTemplateColumns:"repeat(2,minmax(0,1fr))"}}><div className="metric-card"><strong>{data.totals.avgPre??"—"}/5</strong><span>{ar?"قبلي":"Pre-quiz"} ({data.totals.preCount})</span></div><div className="metric-card"><strong>{data.totals.avgPost??"—"}/5</strong><span>{ar?"بعدي":"Post-quiz"} ({data.totals.postCount})</span></div></div></div>
- <div className="panel"><h2>{ar?"الحسابات":"User accounts"}</h2><p className="muted small">{ar?"بيانات محدودة للمدير فقط؛ لا تشمل كلمات المرور.":"Admin-only listing; passwords are never displayed."}{data.hasMoreUsers?(ar?" يوجد مستخدمون إضافيون غير معروضين.":" More accounts exist beyond this sample."):""}</p><div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>{ar?"الاسم":"Name"}</th><th>{ar?"الإيميل":"Email"}</th><th>{ar?"تم التأكيد":"Verified"}</th><th>{ar?"آخر دخول":"Last sign-in"}</th></tr></thead><tbody>{data.users.map(row=><tr key={row.uid}><td>{row.name||"—"}</td><td dir="ltr">{row.email||"—"}</td><td>{row.emailVerified?"✓":"—"}</td><td>{row.lastSignIn||"—"}</td></tr>)}</tbody></table></div></div>
- </>}
+ if(initializing)return <div className="adm-centered"><RefreshCw className="adm-spin" size={28}/><h2>{T(ar,"جاري التحقق من تسجيل الدخول","Checking your session")}</h2></div>;
+ if(!user)return <div className="adm-centered"><LockKeyhole size={37}/><h2>{T(ar,"سجّل دخولك للوصول للإدارة","Sign in to access management")}</h2><Link className="adm-primary" href={"/"+lang+"/login"}>{T(ar,"تسجيل الدخول","Sign in")}</Link></div>;
+ if(permission==="denied"&&!stats)return <div className="adm-centered"><ShieldAlert size={37}/><h2>{T(ar,"تعذّر فتح لوحة الإدارة","Unable to open the admin console")}</h2><p>{error}</p><button type="button" className="adm-primary" onClick={()=>void loadStats()}>{T(ar,"إعادة المحاولة","Try again")}</button></div>;
+ return <div className="adm-dashboard">
+  <div className="adm-hero"><div><span className="adm-eyebrow"><ShieldCheck size={16}/>{T(ar,"مركز التحكم","WATERWISE CONTROL CENTER")}</span><h1>{T(ar,"لوحة إدارة WaterWise","WaterWise administration")}</h1><p>{T(ar,"إحصائيات التسجيل والنشاط، وتقارير تفصيلية للمستخدمين، وتحكم آمن بالحسابات.","Registration analytics, activity reports and secure account management.")}</p></div><button className="adm-refresh" onClick={()=>{void loadStats();void loadUsers("",query,limit);}}><RefreshCw size={16}/>{T(ar,"تحديث التقارير","Refresh reports")}</button></div>
+  <nav className="adm-tabs" aria-label={T(ar,"أقسام الإدارة","Admin sections")}>
+   <button className={tab==="overview"?"active":""} onClick={()=>changeTab("overview")}><BarChart3 size={18}/>{T(ar,"نظرة عامة","Overview")}</button>
+   <button className={tab==="users"?"active":""} onClick={()=>changeTab("users")}><Users size={18}/>{T(ar,"المستخدمون","Users")}</button>
+   <button className={tab==="audit"?"active":""} onClick={()=>changeTab("audit")}><Activity size={18}/>{T(ar,"سجل الإجراءات","Audit log")}</button>
+  </nav>
+  {error&&<div className="adm-warning" role="alert"><ShieldAlert size={18}/>{error}<button onClick={()=>setError("")} aria-label="Close"><X size={16}/></button></div>}
+  {tab==="overview"&&<div className="adm-section">
+   {!stats?<div className="adm-panel adm-loader"><RefreshCw className="adm-spin" size={22}/>{T(ar,"بنجهز الإحصائيات...","Loading analytics...")}</div>:<>
+    {!stats.complete&&<div className="adm-warning"><ShieldAlert size={18}/>{T(ar,"تنبيه: الإحصائيات لعينة من أول ","Notice: statistics cover the first ")+fmt(stats.scannedUsers)+T(ar," حساب فقط، مش لكل الحسابات."," accounts, not all accounts.")}</div>}
+    <div className="adm-section-heading"><div><span className="adm-section-kicker">ACCOUNTS</span><h2>{T(ar,"المستخدمون والتسجيل","Users & registrations")}</h2></div><small>{T(ar,"تحديث","Updated")}: {date(stats.generatedAt,lang)}</small></div>
+    <div className="adm-stats-grid">
+     <Stat title={T(ar,"حسابات ضمن التقرير","Accounts scanned")} value={fmt(stats.accounts.total)} icon={Users}/>
+     <Stat title={T(ar,"مسجلون آخر 30 يوم","New (30 days)")} value={fmt(stats.accounts.registered30)} icon={CalendarDays}/>
+     <Stat title={T(ar,"آخر دخول خلال 30 يوم","Last sign-in within 30 days")} value={fmt(stats.accounts.signedIn30)} icon={Clock3}/>
+     <Stat title={T(ar,"بريد موثّق","Verified email")} value={fmt(stats.accounts.verified)} icon={CheckCircle2}/>
+     <Stat title={T(ar,"حسابات موقوفة","Disabled accounts")} value={fmt(stats.accounts.disabled)} icon={ShieldOff}/>
+     <Stat title={T(ar,"حسابات إدارية","Administrators")} value={fmt(stats.accounts.admins)} icon={ShieldCheck}/>
+    </div>
+    <div className="adm-panels-grid">
+     <section className="adm-panel"><div className="adm-panel-heading"><h3>{T(ar,"تطور التسجيل في 6 شهور","Registrations over six months")}</h3><TrendingUp size={20}/></div><div className="adm-chart">{stats.registrationsByMonth.map(x=><div key={x.label} className="adm-bar-group" title={x.label+": "+x.count}><div className="adm-bar-track"><div className="adm-bar" style={{height:Math.max(3,100*x.count/Math.max(1,...stats.registrationsByMonth.map(z=>z.count)))+"%"}}/></div><strong>{fmt(x.count)}</strong><small>{x.label.slice(5)}</small></div>)}</div><p className="adm-subtle">{T(ar,"التواريخ من إنشاء حساب Firebase.","Based on Firebase account creation timestamps.")}</p></section>
+     <section className="adm-panel"><div className="adm-panel-heading"><h3>{T(ar,"طرق تسجيل الدخول","Sign-in providers")}</h3><KeyRound size={20}/></div><div className="adm-provider-list">{[{label:"Google",value:stats.accounts.google},{label:T(ar,"بريد وكلمة مرور","Email & password"),value:stats.accounts.password},{label:T(ar,"حسابات جديدة هذا الأسبوع","New this week"),value:stats.accounts.registered7}].map(x=><div key={x.label}><span>{x.label}</span><strong>{fmt(x.value)}</strong><div className="adm-linear"><span style={{width:(stats.accounts.total?100*x.value/stats.accounts.total:0)+"%"}}/></div></div>)}</div><p className="adm-subtle">{T(ar,"الحساب ممكن يربط أكتر من وسيلة دخول.","An account may link multiple providers.")}</p></section>
+    </div>
+    <div className="adm-section-heading"><div><span className="adm-section-kicker">ENGAGEMENT</span><h2>{T(ar,"التعلّم والإنجازات","Learning & achievements")}</h2></div></div>
+    <div className="adm-stats-grid">
+     <Stat title={T(ar,"حسابات لها نشاط مسجل","Accounts with activity")} value={fmt(stats.activity.progressAccounts)} icon={Activity}/>
+     <Stat title={T(ar,"تحديات مسجلة ذاتيًا","Self-reported challenges")} value={fmt(stats.activity.challenges)} icon={Trophy}/>
+     <Stat title={T(ar,"خطوات فحص التسريبات","Leak-check steps")} value={fmt(stats.activity.checks)} icon={ClipboardCheck}/>
+     <Stat title={T(ar,"تقديرات حاسبة محفوظة","Saved estimates")} value={fmt(stats.activity.estimateCount)} icon={BarChart3}/>
+    </div>
+    <div className="adm-panels-grid">
+     <section className="adm-panel"><div className="adm-panel-heading"><h3>{T(ar,"نتائج الاختبارات","Quiz results")}</h3><GraduationCap size={20}/></div><div className="adm-quiz-results"><div><small>{T(ar,"متوسط قبلي","Average pre-quiz")}</small><strong>{score(stats.activity.avgPre)}</strong><span>{fmt(stats.activity.preCount)} {T(ar,"نتيجة","results")}</span></div><div><small>{T(ar,"متوسط بعدي","Average post-quiz")}</small><strong>{score(stats.activity.avgPost)}</strong><span>{fmt(stats.activity.postCount)} {T(ar,"نتيجة","results")}</span></div></div><div className="adm-highlight">{T(ar,"متوسط التغير لمن أكمل الاختبارين: ","Average paired change: ")}<strong>{stats.activity.avgPairedGain===null?"—":(stats.activity.avgPairedGain>0?"+":"")+stats.activity.avgPairedGain}</strong> / 5 · {fmt(stats.activity.pairedCount)} {T(ar,"مقارنة","pairs")}</div></section>
+     <section className="adm-panel"><div className="adm-panel-heading"><h3>{T(ar,"توزيع إنجاز التحديات","Challenge completion distribution")}</h3><Trophy size={20}/></div><div className="adm-progress-distribution">{stats.activity.completed.map((n,i)=><div key={i}><span>{i}/4</span><div className="adm-linear"><span style={{width:(stats.activity.progressAccounts?100*n/stats.activity.progressAccounts:0)+"%"}}/></div><strong>{fmt(n)}</strong></div>)}</div></section>
+    </div>
+    <div className="adm-fact"><ShieldAlert size={18}/><p>{T(ar,"الأرقام تصف بيانات تم تسجيلها على الموقع، وليست قياسات ميدانية لتوفير المياه. آخر تسجيل دخول هو وقت ترصده Firebase وليس نشاطًا لحظيًا.","Activity is self-reported, not measured water savings. Last sign-in is a Firebase timestamp, not a live activity signal.")}</p></div>
+   </>}
+  </div>}
+  {tab==="users"&&<section className="adm-section"><div className="adm-section-heading"><div><span className="adm-section-kicker">DIRECTORY</span><h2>{T(ar,"حسابات المستخدمين","User accounts")}</h2></div><button className="adm-secondary" onClick={csv} disabled={!list?.users.length}><Download size={17}/>{T(ar,"تصدير الصفحة CSV","Export page CSV")}</button></div><div className="adm-panel">
+   <form className="adm-filters" onSubmit={e=>{e.preventDefault();lookup();}}><label className="adm-search"><Search size={17}/><input type="search" value={searchInput} onChange={e=>setSearchInput(e.target.value)} placeholder={T(ar,"الإيميل كامل أو UID","Exact email or UID")}/></label><button className="adm-primary" type="submit">{T(ar,"بحث","Search")}</button><button type="button" className="adm-secondary" onClick={()=>{setSearchInput("");setQuery("");setHistory([]);void loadUsers("","",limit);}}>{T(ar,"مسح","Clear")}</button><label className="adm-size">{T(ar,"لكل صفحة","Per page")} <select value={limit} onChange={e=>changeSize(Number(e.target.value))}><option value={25}>25</option><option value={50}>50</option></select></label></form>
+   <p className="adm-help">{T(ar,"التنقل يشمل جميع الصفحات. البحث العالمي يتطلب البريد الكامل أو UID، وليس جزءًا من الاسم.","Browse all pages. Global search requires an exact email or UID, not a partial name.")}</p>
+   <div className="adm-table-scroll"><table className="adm-table"><thead><tr><th>{T(ar,"المستخدم","User")}</th><th>{T(ar,"الحالة","Status")}</th><th>{T(ar,"التحديات","Challenges")}</th><th>{T(ar,"آخر دخول","Last sign-in")}</th><th>{T(ar,"التفاصيل","Details")}</th></tr></thead><tbody>{list?.users.map(u=><tr key={u.uid}><td><div className="adm-person"><span className="adm-avatar">{u.photoURL?<img src={u.photoURL} alt="" referrerPolicy="no-referrer"/>:<UserRound size={20}/>}</span><span><strong>{u.name||u.email||u.uid}</strong><small dir="ltr">{u.email||u.uid}</small></span></div></td><td><span className={"adm-state "+(u.disabled?"danger":u.emailVerified?"good":"neutral")}>{u.disabled?T(ar,"موقوف","Disabled"):u.emailVerified?T(ar,"موثق","Verified"):T(ar,"غير موثق","Unverified")}</span>{u.isAdmin&&<span className="adm-admin-mark">Admin</span>}</td><td>{u.progress?.challenges.length??0}/4</td><td>{date(u.lastSignIn,lang)}</td><td><button className="adm-view" onClick={()=>void openDetail(u.uid)}><Eye size={16}/>{T(ar,"عرض","View")}</button></td></tr>)}{!list?.users.length&&<tr><td colSpan={5} className="adm-empty">{busy==="users"?T(ar,"جاري تحميل الحسابات...","Loading users..."):T(ar,"لا توجد نتائج.","No results.")}</td></tr>}</tbody></table></div>
+   <div className="adm-pager"><span>{query?T(ar,"بحث دقيق","Exact lookup"):T(ar,"صفحة ","Page ")+fmt(history.length+1)} · {fmt(list?.users.length||0)} {T(ar,"حساب","users")}</span><div><button disabled={!history.length||busy==="users"} onClick={previous}><ChevronRight size={17}/>{T(ar,"السابق","Previous")}</button><button disabled={!list?.nextCursor||Boolean(query)||busy==="users"} onClick={next}>{T(ar,"التالي","Next")}<ChevronLeft size={17}/></button></div></div>
+  </div></section>}
+  {tab==="audit"&&<section className="adm-section"><div className="adm-section-heading"><div><span className="adm-section-kicker">SECURITY</span><h2>{T(ar,"سجل إجراءات الإدارة","Administrator audit log")}</h2></div><button className="adm-secondary" onClick={()=>void loadAudit()}><RefreshCw size={17}/>{T(ar,"تحديث","Refresh")}</button></div><div className="adm-panel"><p className="adm-help">{T(ar,"آخر 50 إجراء منذ تفعيل السجل، ولا يشمل أحداثًا قبل ذلك.","Last 50 actions since logging was enabled; historical actions are not backfilled.")}</p><div className="adm-table-scroll"><table className="adm-table"><thead><tr><th>{T(ar,"التاريخ","Time")}</th><th>{T(ar,"المشرف","Admin")}</th><th>{T(ar,"الإجراء","Action")}</th><th>{T(ar,"المستخدم","Target")}</th><th>{T(ar,"الحالة","Result")}</th></tr></thead><tbody>{audit?.map(a=><tr key={a.id}><td>{date(a.at,lang)}</td><td dir="ltr">{a.actorEmail||a.actorUid}</td><td>{a.action==="disable"?T(ar,"إيقاف","Disable"):a.action==="enable"?T(ar,"تفعيل","Enable"):T(ar,"إبطال جلسات","Revoke sessions")}</td><td dir="ltr">{a.targetUid}</td><td><span className={"adm-state "+(a.status==="success"?"good":a.status==="failed"?"danger":"neutral")}>{a.status}</span></td></tr>)}{!audit?.length&&<tr><td className="adm-empty" colSpan={5}>{busy==="audit"?T(ar,"جاري التحميل...","Loading..."):T(ar,"لا توجد إجراءات مسجلة.","No recorded actions.")}</td></tr>}</tbody></table></div></div></section>}
+  {detail&&<div className="adm-detail-backdrop" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget){setDetail(null);setConfirm(null);}}}><aside className="adm-detail" role="dialog" aria-modal="true" aria-labelledby="adm-detail-heading"><header className="adm-detail-head"><div><small>USER PROFILE</small><h2 id="adm-detail-heading">{detail.profile.displayName||detail.user.name||detail.user.email||detail.user.uid}</h2></div><button onClick={()=>{setDetail(null);setConfirm(null);}} aria-label={T(ar,"إغلاق","Close")}><X size={23}/></button></header><div className="adm-detail-body">
+   <section className="adm-detail-group"><h3><UserRound size={18}/>{T(ar,"معلومات المستخدم","User information")}</h3><dl><dt>UID</dt><dd dir="ltr">{detail.user.uid}</dd><dt>{T(ar,"الإيميل","Email")}</dt><dd dir="ltr">{detail.user.email||"—"}</dd><dt>{T(ar,"الهاتف","Phone")}</dt><dd dir="ltr">{detail.profile.phone||"—"}</dd><dt>{T(ar,"توثيق البريد","Email verified")}</dt><dd>{detail.user.emailVerified?T(ar,"نعم","Yes"):T(ar,"لا","No")}</dd><dt>{T(ar,"تاريخ التسجيل","Registered")}</dt><dd>{date(detail.user.createdAt,lang)}</dd><dt>{T(ar,"آخر تسجيل دخول","Last sign-in")}</dt><dd>{date(detail.user.lastSignIn,lang)}</dd><dt>{T(ar,"آخر تحديث لجلسة الدخول","Last token refresh")}</dt><dd>{date(detail.user.lastRefresh,lang)}</dd><dt>{T(ar,"طرق الدخول","Providers")}</dt><dd>{detail.user.providers.join(", ")||"—"}</dd><dt>{T(ar,"الحالة","Status")}</dt><dd>{detail.user.disabled?T(ar,"موقوف","Disabled"):T(ar,"مفعّل","Enabled")}</dd></dl></section>
+   <section className="adm-detail-group"><h3><Trophy size={18}/>{T(ar,"التحديات والفحوص","Challenges & checks")}</h3><div className="adm-detail-kpis"><div><strong>{detail.progress.challenges.length}/4</strong><span>{T(ar,"تحديات","Challenges")}</span></div><div><strong>{detail.progress.checked.length}/4</strong><span>{T(ar,"فحوص","Checks")}</span></div></div><div className="adm-tags">{[...detail.progress.challenges,...detail.progress.checked].map(x=><span key={x}><CheckCircle2 size={13}/>{activityNames[x]?.[lang]||x}</span>)}{!detail.progress.challenges.length&&!detail.progress.checked.length&&T(ar,"لا يوجد نشاط محفوظ.","No saved activity.")}</div></section>
+   <section className="adm-detail-group"><h3><GraduationCap size={18}/>{T(ar,"الاختبارات والاستهلاك","Quiz & estimates")}</h3><div className="adm-detail-kpis"><div><strong>{score(detail.progress.pre)}</strong><span>{T(ar,"قبلي","Pre-quiz")}</span></div><div><strong>{score(detail.progress.post)}</strong><span>{T(ar,"بعدي","Post-quiz")}</span></div></div><p>{T(ar,"تقدير الاستخدام اليومي: ","Estimated daily use: ")}<strong>{detail.progress.estimate===null?"—":fmt(detail.progress.estimate)+" "+T(ar,"لتر/يوم","L/day")}</strong></p><small>{T(ar,"آخر تحديث للنشاط: ","Activity updated: ")}{date(detail.progress.updatedAt,lang)}</small></section>
+   <section className="adm-detail-group"><h3><ShieldAlert size={18}/>{T(ar,"إدارة الحساب","Account management")}</h3>{detail.user.isAdmin||detail.viewerUid===detail.user.uid?<p className="adm-help">{T(ar,"حسابات المشرفين محمية من التعديل من هذه الشاشة.","Administrator accounts are protected from changes here.")}</p>:<>
+    <p className="adm-help">{T(ar,"تعطيل حساب يمنع تسجيل الدخول. إبطال الجلسات يطلب تسجيل الدخول من جديد، وقد يتأخر لحين تحديث الرمز. كل إجراء يُسجَّل.","Disabling a user blocks access. Session revocation requires reauthentication; client effects may wait until token refresh. All actions are logged.")}</p>
+    <div className="adm-action-list"><button className={detail.user.disabled?"adm-primary":"adm-danger"} onClick={()=>setConfirm(detail.user.disabled?"enable":"disable")}>{detail.user.disabled?<ShieldCheck size={17}/>:<ShieldOff size={17}/>} {detail.user.disabled?T(ar,"إعادة تفعيل الحساب","Enable account"):T(ar,"إيقاف الحساب","Disable account")}</button><button className="adm-secondary" onClick={()=>setConfirm("revoke")}><KeyRound size={17}/>{T(ar,"إبطال الجلسات","Revoke sessions")}</button></div>
+    {confirm&&<div className="adm-confirm"><h4>{T(ar,"تأكيد الإجراء","Confirm action")}</h4><p>{T(ar,"الإجراء سيؤثر على هذا الحساب ويُسجّل في سجل الإدارة. هل أنت متأكد؟","This will affect the selected user and be recorded in the audit log. Confirm?")}</p><div><button className="adm-danger" disabled={busy==="action"} onClick={()=>void performAction()}>{busy==="action"?T(ar,"جارٍ التنفيذ...","Working..."):T(ar,"تأكيد","Confirm")}</button><button className="adm-secondary" onClick={()=>setConfirm(null)}>{T(ar,"إلغاء","Cancel")}</button></div></div>}</>}</section>
+  </div></aside></div>}
  </div>;
 }
