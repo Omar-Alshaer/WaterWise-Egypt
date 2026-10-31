@@ -1,6 +1,7 @@
 import "../globals.css";
 import "../polish.css";
 import "../experience.css";
+import "../brand-refresh.css";
 import {notFound} from "next/navigation";
 import type {Metadata} from "next";
 import {isLang} from "@/lib/content";
