@@ -6,14 +6,13 @@ import {useAuth} from "@/components/auth-provider";
 // Once auth is resolved it closes after 2.5s; hard limit 5.5s prevents blocking on failures.
 export function StartupSplash(){
  const {initializing}=useAuth();
- const [visible,setVisible]=useState(false);
+ const [visible,setVisible]=useState(true);
  const [minElapsed,setMinElapsed]=useState(false);
  const [maxElapsed,setMaxElapsed]=useState(false);
  useEffect(()=>{
   let seen=false;
   try{seen=sessionStorage.getItem("wwe-splash-seen") === "1";}catch{}
-  if(seen)return;
-  setVisible(true);
+  if(seen){setVisible(false);return;}
   const reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const min=window.setTimeout(()=>setMinElapsed(true),reduced?250:2500);
   const max=window.setTimeout(()=>setMaxElapsed(true),5500);

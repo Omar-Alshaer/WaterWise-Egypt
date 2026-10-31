@@ -11,9 +11,11 @@ const config = {
  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 export const firebaseConfigured=Object.values(config).every(value=>typeof value==="string"&&value.length>0);
+// Safety switch: public sign-up stays disabled until rules, privacy and onboarding are verified.
+export const firebaseAuthEnabled=firebaseConfigured&&process.env.NEXT_PUBLIC_ENABLE_AUTH==="true";
 let app: FirebaseApp | null=null;
 export function getFirebaseApp():FirebaseApp|null {
- if (!firebaseConfigured || typeof window==="undefined")return null;
+ if (!firebaseAuthEnabled || typeof window==="undefined")return null;
  if (!app) app = getApps().length?getApp():initializeApp(config as {apiKey:string;authDomain:string;projectId:string;appId:string});
  return app;
 }
