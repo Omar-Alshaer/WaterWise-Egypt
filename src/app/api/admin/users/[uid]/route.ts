@@ -40,7 +40,10 @@ export async function PATCH(req:NextRequest,{params}:Params){
   });
   try{
    if(action==="revoke")await auth.revokeRefreshTokens(uid);
-   else await auth.updateUser(uid,{disabled:action==="disable"});
+   else {
+    await auth.updateUser(uid,{disabled:action==="disable"});
+    if(action==="disable")await auth.revokeRefreshTokens(uid);
+   }
    await event.update({status:"success",completedAt:FieldValue.serverTimestamp()});
   }catch(e){
    await event.update({status:"failed",completedAt:FieldValue.serverTimestamp()}).catch(()=>{});
