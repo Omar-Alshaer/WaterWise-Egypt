@@ -75,13 +75,13 @@ export function authErrorMessage(code:string,ar:boolean){
   "invalid-email":["اكتب إيميل صحيح.","Enter a valid email address."],
   "popup-closed-by-user":["تم إغلاق نافذة Google.","Google sign-in popup was closed."],
   "popup-blocked":["المتصفح منع نافذة Google، اسمح بالنوافذ للموقع.","Allow popups to sign in with Google."],
-  "unauthorized-domain":["الدومين غير مضاف في Firebase Authorized Domains.","Add this domain to Firebase Authorized Domains."],
-  "operation-not-allowed":["وسيلة الدخول مش مفعلة في Firebase.","Enable this sign-in provider in Firebase."],
-  "permission-denied":["قواعد Firestore لا تسمح بالعملية. راجع إعدادات القواعد.","Firestore rules denied the operation."],
+  "unauthorized-domain":["تسجيل الدخول غير متاح من الرابط ده. جرّب الرابط الرئيسي للموقع.","Sign-in is not available on this address. Try the main site link."],
+  "operation-not-allowed":["طريقة تسجيل الدخول دي غير متاحة حاليًا.","This sign-in method is unavailable right now."],
+  "permission-denied":["تعذّر حفظ التغيير لحسابك. جرّب تاني.","Could not save this change to your account. Please try again."],
   "phone-format":["اكتب رقم موبايل صحيح، زي 01012345678 في مصر.","Enter a valid mobile number, e.g. 01012345678 in Egypt."],
   "invalid-name":["الاسم لازم يكون من حرفين لـ100 حرف.","Name must be 2–100 characters."],
   "consent-required":["لازم توافق على سياسة الخصوصية قبل التسجيل.","Please accept the privacy policy to continue."],
-  "firebase-not-configured":["لسه محتاجين نوصل المشروع بـFirebase.","Firebase project configuration is missing."],
+  "firebase-not-configured":["خدمة تسجيل الدخول غير متاحة حاليًا.","Sign-in is temporarily unavailable."],
  };
  const key=k==="missing-or-insufficient-permissions"?"permission-denied":k;
  const msg=messages[key];return msg?(ar?msg[0]:msg[1]):ar?"تعذر إكمال الطلب. جرّب تاني وراجع اتصالك.":"Request failed. Try again and check your connection.";
