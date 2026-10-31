@@ -1,0 +1,31 @@
+name: Verify WaterWise
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [feat/cloud-progress-admin]
+permissions:
+  contents: read
+jobs:
+  build-and-rules:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v4.7.1
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Firestore security rules tests
+        run: npm run test:rules
+      - name: Next.js production build
+        run: npm run build
