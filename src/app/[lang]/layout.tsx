@@ -4,6 +4,7 @@ import "../experience.css";
 import "../brand-refresh.css";
 import "../final-polish.css";
 import "../qa-refinements.css";
+import "../final-release-fixes.css";
 import {notFound} from "next/navigation";
 import type {Metadata} from "next";
 import {isLang} from "@/lib/content";

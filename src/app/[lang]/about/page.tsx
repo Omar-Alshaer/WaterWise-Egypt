@@ -29,7 +29,7 @@ export default async function AboutPage({params}:{params:Promise<{lang:string}>}
    </div>
   </section>
   <div className="container ww-about-body">
-   <section className="ww-about-overview" data-reveal><MascotCorner pose="thinking" className="ww-about-overview-character"/>
+   <section className="ww-about-overview" data-reveal>
     <div className="ww-about-title"><span className="ww-section-label"><Leaf size={17}/>{ar?"ليه WaterWise؟":"WHY WATERWISE?"}</span><h2>{ar?"مش بس نتكلم عن المياه، نبدأ نتصرف.":"Beyond awareness. Toward action."}</h2><p>{ar?"المشروع بيجمع بين المعرفة والأدوات التفاعلية، من غير ما يخلط بين التقديرات وقياسات استهلاك المياه الحقيقية.":"Our project connects knowledge with interactive tools, keeping estimates clearly separate from actual measured water use."}</p></div>
     <div className="ww-about-value-grid">{sections.map(({Icon,title,body},i)=><article className="ww-about-value" key={title} data-reveal><span className="ww-about-value-number">0{i+1}</span><div className="ww-about-value-icon"><Icon size={27}/></div><h3>{title}</h3><p>{body}</p></article>)}</div>
    </section>

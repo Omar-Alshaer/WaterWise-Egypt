@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import {createPortal} from "react-dom";
 import Link from "next/link";
 import {useEffect,useRef,useState,type ReactNode} from "react";
 import {ArrowLeft,ArrowRight,LockKeyhole,Sparkles,X,ShieldCheck} from "lucide-react";
@@ -15,6 +16,8 @@ const copy={
 export function AuthExperienceGate({lang,kind,children}:{lang:Lang;kind:Kind;children:ReactNode}){
  const {user,profile,initializing,profileError}=useAuth();
  const [open,setOpen]=useState(true);
+ const [portalHost,setPortalHost]=useState<Element|null>(null);
+ useEffect(()=>{setPortalHost(document.querySelector(".site"));},[]);
  const close=useRef<HTMLButtonElement>(null),link=useRef<HTMLAnchorElement>(null),later=useRef<HTMLButtonElement>(null);
  const eligible=Boolean(user&&profile);
  const needsProfile=Boolean(user&&!profile);
@@ -42,7 +45,7 @@ export function AuthExperienceGate({lang,kind,children}:{lang:Lang;kind:Kind;chi
    <h2>{t.title}</h2><p>{t.body}</p>
    <Link href={redirect} className="ww-gate-action">{needsProfile?(ar?"إكمال بيانات حسابي":"Complete my profile"):(ar?"تسجيل الدخول أو إنشاء حساب":"Sign in or create account")}<Arrow size={19}/></Link>
    <small><ShieldCheck size={15}/>{t.hint}</small>
-   {open&&<div className="ww-auth-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setOpen(false);}}>
+   {open&&portalHost&&createPortal(<div className="ww-auth-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setOpen(false);}}>
     <div className="ww-auth-dialog" role="dialog" aria-modal="true" aria-labelledby={"ww-"+kind+"-title"} aria-describedby={"ww-"+kind+"-desc"}>
      <button ref={close} type="button" className="ww-auth-close" aria-label={ar?"إغلاق":"Close"} onClick={()=>setOpen(false)}><X size={21}/></button>
      <Image src={copy[kind].mascot} alt="" width={215} height={215} className="ww-auth-mascot"/>
@@ -51,6 +54,6 @@ export function AuthExperienceGate({lang,kind,children}:{lang:Lang;kind:Kind;chi
      <Link ref={link} href={redirect} className="ww-gate-action">{needsProfile?(ar?"إكمال بيانات حسابي":"Complete my profile"):(ar?"سجّل دخولك وابدأ":"Sign in to get started")}<Arrow size={18}/></Link>
      <button ref={later} type="button" className="ww-gate-later" onClick={()=>setOpen(false)}>{ar?"هتفرج الأول":"I'll look around first"}</button>
     </div>
-   </div>}
+   </div>,portalHost)}
  </section>;
 }
