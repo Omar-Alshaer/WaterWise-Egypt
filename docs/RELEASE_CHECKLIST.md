@@ -37,4 +37,6 @@ The report lists at most the **first 100** Firebase Auth accounts, and derives c
 - Production: import repo into Vercel, verify build, Firebase env, DNS, TLS and OAuth authorized domains.
 
 ## QA
-\`npm install && npm run typecheck && npm run build\` then verify \`/ar\`, \`/en\`, calculators, quiz, leak checklist, activity sync, admin denial for regular user, admin success with claim, and account deletion.
+\`npm ci --include=dev --no-audit && npm run typecheck && npm run test:rules && npm run build\` then verify \`/ar\`, \`/en\`, calculators, quiz, leak checklist, activity sync, admin denial for regular user, admin success with claim, and account deletion.
+
+For Node/npm versions, slow-install diagnostics and separate dependency audits, see [INSTALL.md](INSTALL.md).

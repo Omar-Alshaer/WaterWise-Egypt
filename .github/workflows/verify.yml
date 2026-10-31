@@ -3,7 +3,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [feat/cloud-progress-admin]
+    branches: [main]
 permissions:
   contents: read
 jobs:
@@ -16,13 +16,19 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: '22'
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Use project npm version
+        run: npm install --global npm@10.9.9 --no-audit --no-fund
       - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v4.7.1
         with:
           distribution: temurin
           java-version: '21'
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --include=dev --no-audit
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
       - name: Typecheck
         run: npm run typecheck
       - name: Firestore security rules tests
