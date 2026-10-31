@@ -4,10 +4,27 @@ import {getFirebaseAuth,getFirebaseStore} from "./firebase";
 
 export type SignUpDetails={name:string;email:string;password:string;phone:string;consent:boolean};
 
-export function normalizePhone(phone:string){
- const value=phone.replace(/[\s()-]/g,"");
- if(!/^\+[1-9][0-9]{7,14}$/.test(value))throw new Error("phone-format");
- return value;
+export function normalizePhone(phone:string,dialCode="+20"){
+ const digits=phone.replace(/[٠-٩]/g,c=>String("٠١٢٣٤٥٦٧٨٩".indexOf(c)))
+                   .replace(/[۰-۹]/g,c=>String("۰۱۲۳۴۵۶۷۸۹".indexOf(c)))
+                   .replace(/[\s()\-.]/g,"");
+ if(!digits)throw new Error("phone-format");
+ let normalized:string;
+ if(digits.startsWith("+"))normalized=digits;
+ else if(digits.startsWith("00"))normalized="+"+digits.slice(2);
+ else {
+  if(!/^\+[1-9]\d{0,2}$/.test(dialCode))throw new Error("phone-format");
+  // If the full country code is pasted without '+', don't duplicate it.
+  if(digits.startsWith(dialCode.slice(1)) && digits.length>dialCode.length+6){
+   normalized="+"+digits;
+  }else{
+   const national=digits.replace(/^0+/,"");
+   normalized=dialCode+national;
+  }
+ }
+ if(!/^\+[1-9][0-9]{7,14}$/.test(normalized))throw new Error("phone-format");
+ if(normalized.startsWith("+20")&&!/^\+201[0125][0-9]{8}$/.test(normalized))throw new Error("phone-format");
+ return normalized;
 }
 function services(){const auth=getFirebaseAuth(),db=getFirebaseStore();if(!auth||!db)throw new Error("firebase-not-configured");return {auth,db};}
 export async function createProfile(person:User,details:{name:string;phone:string;consent:boolean}){
@@ -61,7 +78,7 @@ export function authErrorMessage(code:string,ar:boolean){
   "unauthorized-domain":["الدومين غير مضاف في Firebase Authorized Domains.","Add this domain to Firebase Authorized Domains."],
   "operation-not-allowed":["وسيلة الدخول مش مفعلة في Firebase.","Enable this sign-in provider in Firebase."],
   "permission-denied":["قواعد Firestore لا تسمح بالعملية. راجع إعدادات القواعد.","Firestore rules denied the operation."],
-  "phone-format":["اكتب رقم التليفون بصيغة دولية زي +201XXXXXXXXX.","Enter an international phone number, e.g. +201XXXXXXXXX."],
+  "phone-format":["اكتب رقم موبايل صحيح، زي 01012345678 في مصر.","Enter a valid mobile number, e.g. 01012345678 in Egypt."],
   "invalid-name":["الاسم لازم يكون من حرفين لـ100 حرف.","Name must be 2–100 characters."],
   "consent-required":["لازم توافق على سياسة الخصوصية قبل التسجيل.","Please accept the privacy policy to continue."],
   "firebase-not-configured":["لسه محتاجين نوصل المشروع بـFirebase.","Firebase project configuration is missing."],
