@@ -3,7 +3,7 @@ export const locales: Lang[] = ["ar", "en"];
 export function isLang(v: string): v is Lang { return v === "ar" || v === "en"; }
 export const team = [
  {name:"Omar Reda Elshaer",id:"24100592",image:"/team/Omar.png",roleAr:"تطوير الموقع وتجربة المستخدم",roleEn:"Website development & UX",linkedin:"https://www.linkedin.com/in/omar-r-shaer/",lead:true},
- {name:"Dareen Ayman Hamza",id:"24100816",image:/team/Dareen.jpeg,roleAr:"البحث وإعداد المحتوى",roleEn:"Research & content",linkedin:"https://www.linkedin.com/in/dareen-ayman-6aa351448/",lead:false},
+ {name:"Dareen Ayman Hamza",id:"24100816",image:"/team/Dareen.jpeg",roleAr:"البحث وإعداد المحتوى",roleEn:"Research & content",linkedin:"https://www.linkedin.com/in/dareen-ayman-6aa351448/",lead:false},
  {name:"Sarah Ibrahim Al Sobary",id:"24100855",image:null,roleAr:"البحث والمصادر العلمية",roleEn:"Research & references",linkedin:"https://www.linkedin.com/in/sarah-ibrahim-a390a9448/",lead:false},
  {name:"Fayrouz Ahmed Mohamed",id:"24100952",image:null,roleAr:"المحتوى والتوعية",roleEn:"Content & awareness",linkedin:"https://www.linkedin.com/in/fayrouz-hassouna-5765b1365",lead:false},
  {name:"Huda Mahmoud Salem",id:"24101128",image:null,roleAr:"مراجعة وتنظيم المحتوى",roleEn:"Content review & organization",linkedin:null,lead:false}
