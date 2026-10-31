@@ -12,7 +12,7 @@ const config = {
 };
 export const firebaseConfigured=Object.values(config).every(value=>typeof value==="string"&&value.length>0);
 // Safety switch: public sign-up stays disabled until rules, privacy and onboarding are verified.
-export const firebaseAuthEnabled=firebaseConfigured&&process.env.NEXT_PUBLIC_ENABLE_AUTH==="true";
+export const firebaseAuthEnabled=firebaseConfigured && process.env.NEXT_PUBLIC_ENABLE_AUTH==="true" && process.env.NEXT_PUBLIC_FIRESTORE_RULES_VERIFIED==="true";
 let app: FirebaseApp | null=null;
 export function getFirebaseApp():FirebaseApp|null {
  if (!firebaseAuthEnabled || typeof window==="undefined")return null;
