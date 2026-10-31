@@ -7,3 +7,10 @@ out
 .vercel
 *.tsbuildinfo
 .DS_Store
+*.log
+.firebase/
+*firebase-adminsdk*.json
+*service-account*.json
+*serviceAccount*.json
+*.pem
+*.key

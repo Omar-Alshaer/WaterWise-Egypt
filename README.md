@@ -4,16 +4,29 @@ Bilingual, responsive Next.js website built for an AIU sustainability project. P
 
 ## Development
 
-Requires Node.js 22+. Run:
+Use Node.js 22 and npm 10.9.9 (the same major versions as CI and Vercel).
+If you use nvm, run `nvm install && nvm use` first. Run:
 
 ~~~bash
-npm install
+npm ci --include=dev --no-audit
 npm run dev
+~~~
+
+For verification (in a separate terminal):
+
+~~~bash
 npm run typecheck
 npm run build
+npm audit --audit-level=high
 ~~~
 
 Open http://localhost:3000/ar or http://localhost:3000/en.
+
+The committed `package-lock.json` is required. Use `npm install` only when intentionally changing dependencies; commit both manifests together. `npm ci` replaces `node_modules`, so stop the dev server first and only reinstall when dependencies change. Do not mix npm, pnpm and Yarn lockfiles.
+
+Slow install on Linux? Run `npm run diagnose:install -- --network` (works before installing dependencies) and follow [the Egyptian Arabic install and troubleshooting guide](docs/INSTALL.md). It separates registry/DNS delays from dependency resolution, lifecycle scripts and disk performance. It never reads Firebase credentials.
+
+Firestore rules tests require Java 21 and `npm run test:rules`. The pinned Firebase CLI is downloaded on demand for that command only; it is not part of normal development or Vercel installation.
 
 ## Delivery batches
 
