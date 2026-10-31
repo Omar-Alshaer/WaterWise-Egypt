@@ -1,11 +1,12 @@
 "use client";
 import Link from "next/link";
 import {usePathname} from "next/navigation";
-import {useState} from "react";
+import {useEffect,useState} from "react";
 import {Droplets, Menu, X, Languages, ArrowUpRight, Waves, Github, UserRound} from "lucide-react";
 import {Lang,t} from "@/lib/content";
 export function SiteShell({lang,children}:{lang:Lang;children:React.ReactNode}){
  const [open,setOpen]=useState(false);const path=usePathname();const tr=t[lang];const other=lang==="ar"?"en":"ar";
+ useEffect(()=>{document.documentElement.lang=lang;document.documentElement.dir=lang==="ar"?"rtl":"ltr";},[lang]);
  const links=[["",tr.nav.home],["tools",tr.nav.tools],["learn",tr.nav.learn],["challenges",tr.nav.challenges],["dashboard",tr.nav.dashboard],["research",tr.nav.research],["team",tr.nav.team]] as const;
  return <div className="site" dir={lang==="ar"?"rtl":"ltr"} lang={lang}>
   <div className="announcement"><Waves size={15}/><span>{lang==="ar"?"المياه مورد مشترك، وكل عادة صغيرة ممكن تبدأ فرق.":"Water is a shared resource. Change starts with small habits."}</span></div>
