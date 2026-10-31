@@ -1,42 +1,71 @@
 rules_version = '2';
 service cloud.firestore {
  match /databases/{database}/documents {
-  function signedIn(){return request.auth!=null;}
-  function owner(userId){return signedIn()&&request.auth.uid==userId;}
-  function profileKeys(){
+  function signedIn() { return request.auth != null; }
+  function owner(uid) { return signedIn() && request.auth.uid == uid; }
+
+  function profileFields() {
    return ['displayName','email','phone','phoneVerified','consentVersion','createdAt','updatedAt'];
   }
-  function validProfile(userId){
-   return owner(userId)
-    && request.resource.data.keys().hasAll(profileKeys())
-    && request.resource.data.keys().hasOnly(profileKeys())
-    && request.resource.data.displayName is string
-    && request.resource.data.displayName.size()>=2
-    && request.resource.data.displayName.size()<=100
-    && request.resource.data.email == request.auth.token.email
-    && request.resource.data.phone is string
-    && request.resource.data.phone.matches('^\\+[1-9][0-9]{7,14}$')
-    && request.resource.data.phoneVerified==false
-    && request.resource.data.consentVersion=='2026-10'
-    && request.resource.data.createdAt==request.time
-    && request.resource.data.updatedAt==request.time;
+  function validPhone() {
+   return request.resource.data.phone is string &&
+     request.resource.data.phone.matches('^\\+[1-9][0-9]{7,14}$');
   }
-  match /users/{userId} {
-   allow get:if owner(userId);
-   allow list:if false;
-   allow create:if validProfile(userId);
-   // Self-service edits can change name/phone only. Realtime profile data is read-only otherwise.
-   allow update:if owner(userId)
-    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName','phone','updatedAt'])
-    && request.resource.data.displayName is string
-    && request.resource.data.displayName.size()>=2
-    && request.resource.data.displayName.size()<=100
-    && request.resource.data.phone is string
-    && request.resource.data.phone.matches('^\\+[1-9][0-9]{7,14}$')
-    && request.resource.data.updatedAt==request.time;
-   allow delete:if false;
-   match /{document=**}{allow read,write:if false;}
+  function validProfileCreate(uid) {
+   return owner(uid) &&
+     request.resource.data.keys().hasAll(profileFields()) &&
+     request.resource.data.keys().hasOnly(profileFields()) &&
+     request.resource.data.displayName is string &&
+     request.resource.data.displayName.size() >= 2 &&
+     request.resource.data.displayName.size() <= 100 &&
+     request.resource.data.email == request.auth.token.email &&
+     validPhone() &&
+     request.resource.data.phoneVerified == false &&
+     request.resource.data.consentVersion == '2026-10' &&
+     request.resource.data.createdAt == request.time &&
+     request.resource.data.updatedAt == request.time;
   }
-  match /{document=**}{allow read,write:if false;}
+  function validProgress() {
+   return request.resource.data.keys().hasOnly(
+      ['estimate','checked','challenges','pre','post','updatedAt']) &&
+    request.resource.data.updatedAt == request.time &&
+    request.resource.data.get('estimate', 0) is int &&
+    request.resource.data.get('estimate', 0) >= 0 &&
+    request.resource.data.get('estimate', 0) <= 200000 &&
+    request.resource.data.get('pre', 0) is int &&
+    request.resource.data.get('pre', 0) >= 0 &&
+    request.resource.data.get('pre', 0) <= 5 &&
+    request.resource.data.get('post', 0) is int &&
+    request.resource.data.get('post', 0) >= 0 &&
+    request.resource.data.get('post', 0) <= 5 &&
+    request.resource.data.get('checked', []) is list &&
+    request.resource.data.get('checked', []).size() <= 4 &&
+    request.resource.data.get('checked', []).hasOnly(['tap','toilet','pipes','meter']) &&
+    request.resource.data.get('challenges', []) is list &&
+    request.resource.data.get('challenges', []).size() <= 4 &&
+    request.resource.data.get('challenges', []).hasOnly(['tap-off','shower','leak','full-load']);
+  }
+  match /users/{uid} {
+   allow get: if owner(uid);
+   allow list: if false;
+   allow create: if validProfileCreate(uid);
+   allow update: if owner(uid) &&
+     request.resource.data.diff(resource.data).affectedKeys()
+       .hasOnly(['displayName','phone','updatedAt']) &&
+     request.resource.data.displayName is string &&
+     request.resource.data.displayName.size() >= 2 &&
+     request.resource.data.displayName.size() <= 100 &&
+     validPhone() &&
+     request.resource.data.updatedAt == request.time;
+   allow delete: if false;
+   match /progress/{entry} {
+    allow get: if owner(uid) && entry == 'current';
+    allow list: if false;
+    allow create,update: if owner(uid) && entry == 'current' && validProgress();
+    allow delete: if false;
+   }
+   match /{nested=**} { allow read,write: if false; }
+  }
+  match /{other=**} { allow read,write: if false; }
  }
 }
