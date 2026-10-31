@@ -1,2 +1,12 @@
-import {notFound} from "next/navigation";import {Linkedin,Users} from "lucide-react";import {isLang,team} from "@/lib/content";import {PageHero} from "@/components/page-hero";
-export default async function Team({params}:{params:Promise<{lang:string}>}){const {lang}=await params;if(!isLang(lang))notFound();const ar=lang==="ar";return <><PageHero lang={lang} kicker="ABOUT DEVELOPMENT" title={ar?"تعرف على فريق التطوير":"Meet the development team"} description={ar?"مشروع WaterWise Egypt من طلاب جامعة العلمين الدولية. الصور الحالية افتراضية وروابط LinkedIn هتضاف بعد استلامها.":"Built by Alamein International University students. Images are placeholders; individual LinkedIn profiles will be added when supplied."}/><div className="container page-content"><div className="team-grid">{team.map(member=><article className="team-card" key={member.id}><img src={member.image} alt={ar?"صورة افتراضية للعضو":"Placeholder portrait"}/><h3>{member.name}</h3><p>{member.faculty}<br/>{member.id}</p>{member.linkedin?<a className="linkedin" href={member.linkedin} target="_blank" rel="noopener noreferrer"><Linkedin size={17}/> LinkedIn</a>:<span className="linkedin disabled" title="Profile URL not yet provided"><Linkedin size={17}/> {ar?"LinkedIn قريبًا":"LinkedIn soon"}</span>}</article>)}</div><div className="notice" style={{marginTop:27}}><Users size={18}/> {ar?"استبدل الصور من public/team واربط حساب LinkedIn الحقيقي لكل عضو من src/lib/content.ts.":"Replace portraits in public/team and add real LinkedIn URLs in src/lib/content.ts."}</div></div></>}
+import {notFound} from "next/navigation";
+import {Users} from "lucide-react";
+import {isLang,team} from "@/lib/content";
+import {PageHero} from "@/components/page-hero";
+export default async function Team({params}:{params:Promise<{lang:string}>}){
+ const {lang}=await params;if(!isLang(lang))notFound();const ar=lang==="ar";
+ return <><PageHero lang={lang} kicker={ar?"فريق واتر وايز":"THE PEOPLE BEHIND WATERWISE"} title={ar?"تعرّف على فريقنا":"Meet our team"} description={ar?"وراء WaterWise Egypt خمسة طلاب من جامعة العلمين الدولية، بيجمعهم هدف واحد: نشر ثقافة استخدام المياه بمسؤولية.":"WaterWise Egypt is built by five Alamein International University students working toward more responsible water use."}/>
+ <div className="container page-content"><div className="team-grid">{team.map(member=><article className="team-card" key={member.id}>
+  <span className="team-initials" aria-hidden="true">{member.name.trim().split(/\s+/).slice(0,2).map(s=>s[0]).join("")}</span>
+  <h3>{member.name}</h3><p>{member.faculty}</p>
+ </article>)}</div><div className="team-note"><Users size={21}/>{ar?"فريق من تخصصات مختلفة، بيتعاون علشان يخلي الترشيد عادة يومية.":"Different specialties, one shared goal: make water conservation part of daily life."}</div></div></>;
+}

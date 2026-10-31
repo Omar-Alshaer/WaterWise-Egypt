@@ -22,14 +22,14 @@ export function AdminDashboard({lang}:{lang:Lang}){
    if(result.claims.admin!==true)throw new Error(ar?"الحساب ليس لديه صلاحية الإدارة.":"This account has no administrator permission.");
    const token=await getIdToken(user);
    const response=await fetch("/api/admin/overview",{headers:{Authorization:"Bearer "+token},cache:"no-store"});
-   if(!response.ok)throw new Error(response.status===503?(ar?"إعداد Firebase Admin على السيرفر غير مكتمل.":"Firebase Admin server configuration is missing."):ar?"تعذّر تحميل التقرير، تحقق من الصلاحيات.":"Cannot load report. Check admin permissions.");
+   if(!response.ok)throw new Error(response.status===503?(ar?"لسه في إعداد مطلوب لتشغيل لوحة الإدارة.":"An administrator setting is still missing."):ar?"تعذّر تحميل التقرير، تحقق من الصلاحيات.":"Cannot load report. Check admin permissions.");
    setData(await response.json() as AdminData);setStatus("done");
   }catch(e){setMessage(e instanceof Error?e.message:"Request failed");setStatus("error");}
  };
  if(initializing)return <div className="panel"><RefreshCw size={20}/>{ar?"جاري التحقق...":"Checking session..."}</div>;
  if(!user)return <div className="panel empty-state"><LockKeyhole size={28}/><h2>{ar?"سجل الدخول أولًا":"Sign in first"}</h2><p>{ar?"لوحة الإدارة لا تسمح بالدخول المجهول.":"Admin reports require an authenticated account."}</p></div>;
  return <div className="stack">
- <div className="panel"><span className="tag"><ShieldAlert size={15}/>{ar?"لوحة مقيدة":"Restricted access"}</span><h2 style={{marginTop:15}}>{ar?"التقارير الإدارية":"Administration reports"}</h2><p className="muted small">{ar?"كل طلب بيانات بيتحقق من Firebase ID Token وصلاحية admin على السيرفر. البيانات المعروضة لعينة لا تتجاوز أول 100 حساب لتقليل التكلفة.":"Every request verifies the Firebase ID token and admin role on the server. Reports are based on the first 100 accounts to control costs."}</p><button className="btn btn-primary" disabled={status==="loading"} onClick={load}><RefreshCw size={17}/>{status==="loading"?(ar?"تحميل...":"Loading..."):ar?"تحميل تقرير الحسابات":"Load account report"}</button>{message&&<p className="notice warning" role="alert" style={{marginTop:15}}>{message}</p>}</div>
+ <div className="panel"><span className="tag"><ShieldAlert size={15}/>{ar?"لوحة مقيدة":"Restricted access"}</span><h2 style={{marginTop:15}}>{ar?"التقارير الإدارية":"Administration reports"}</h2><p className="muted small">{ar?"التقرير متاح للمشرفين المصرّح لهم فقط، وبنراجع صلاحيتك في كل طلب. البيانات المعروضة لعينة لا تتجاوز أول 100 حساب لتقليل التكلفة.":"Only authorized administrators can view this report. Your access is checked on every request. Reports are based on the first 100 accounts to control costs."}</p><button className="btn btn-primary" disabled={status==="loading"} onClick={load}><RefreshCw size={17}/>{status==="loading"?(ar?"تحميل...":"Loading..."):ar?"تحميل تقرير الحسابات":"Load account report"}</button>{message&&<p className="notice warning" role="alert" style={{marginTop:15}}>{message}</p>}</div>
  {data&&<><div className="metric-grid">
  {[
   {v:data.sampledUsers,title:ar?"حسابات ضمن العينة":"Sample accounts",I:Users},

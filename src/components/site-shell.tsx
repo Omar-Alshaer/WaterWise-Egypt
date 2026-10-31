@@ -2,12 +2,13 @@
 import Link from "next/link";
 import {usePathname} from "next/navigation";
 import {useEffect,useState} from "react";
-import {Droplets, Menu, X, Languages, ArrowUpRight, Waves, Github, UserRound, Shield} from "lucide-react";
+import {Droplets, Menu, X, Languages, Waves, UserRound, Shield} from "lucide-react";
 import {Lang,t} from "@/lib/content";
 import {useAuth} from "./auth-provider";
 export function SiteShell({lang,children}:{lang:Lang;children:React.ReactNode}){
  const [open,setOpen]=useState(false);const path=usePathname();const tr=t[lang];const other=lang==="ar"?"en":"ar";
- const {profile}=useAuth();
+ const {user,profile}=useAuth();
+ const picture=user?.providerData.find(p=>p.providerId==="google.com")?.photoURL||user?.photoURL;
  useEffect(()=>{document.documentElement.lang=lang;document.documentElement.dir=lang==="ar"?"rtl":"ltr";},[lang]);
  useEffect(()=>{setOpen(false)},[path]);
  const links=[["",tr.nav.home],["tools",tr.nav.tools],["learn",tr.nav.learn],["challenges",tr.nav.challenges],["dashboard",tr.nav.dashboard],["research",tr.nav.research],["team",tr.nav.team]] as const;
@@ -18,10 +19,10 @@ export function SiteShell({lang,children}:{lang:Lang;children:React.ReactNode}){
    <nav id="primary-navigation" className={"navlinks"+(open?" open":"")} aria-label="Primary navigation">{links.map(([url,label])=><Link key={url} aria-current={path==="/"+lang+(url?"/"+url:"")?"page":undefined} onClick={()=>setOpen(false)} className={path==="/"+lang+(url?"/"+url:"")?"active":""} href={"/"+lang+(url?"/"+url:"")}>{label}</Link>)}</nav>
    <div className="nav-actions">
      <Link className="lang-switch" aria-label="Switch language" href={"/"+other+path.replace(/^\/(ar|en)/,"")}><Languages size={17}/>{tr.english}</Link>
-     <Link className="login-link" href={"/"+lang+"/login"} aria-label={profile?profile.displayName:tr.nav.login}><UserRound size={17}/><span>{profile?profile.displayName.split(" ")[0]:tr.nav.login}</span></Link>
+     <Link className="login-link" href={"/"+lang+(user?"/dashboard":"/login")} aria-label={profile?profile.displayName:tr.nav.login}>{picture?<img className="nav-avatar" src={picture} referrerPolicy="no-referrer" alt=""/>:<UserRound size={17}/>}<span>{profile?profile.displayName.split(" ")[0]:tr.nav.login}</span></Link>
      <button className="menu-btn" type="button" aria-controls="primary-navigation" aria-expanded={open} aria-label={open?"Close menu":"Open menu"} onClick={()=>setOpen(!open)}>{open?<X/>:<Menu/>}</button>
    </div></div></header>
   <main id="main-content">{children}</main>
-  <footer className="footer"><div className="container footer-grid"><div><Link href={"/"+lang} className="footer-brand"><Droplets size={23}/> WaterWise Egypt</Link><p>{tr.footer}</p><p className="mini">{tr.disclaimer}</p></div><div className="footer-nav"><Link href={"/"+lang+"/research"}>{tr.nav.research}</Link><Link href={"/"+lang+"/team"}>{tr.nav.team}</Link><Link href={"/"+lang+"/tools"}>{tr.nav.tools}</Link><Link href={"/"+lang+"/privacy"}><Shield size={16}/>{lang==="ar"?"الخصوصية":"Privacy"}</Link><a target="_blank" rel="noopener noreferrer" href="https://github.com/Omar-Alshaer/WaterWise-Egypt"><Github size={17}/> GitHub <ArrowUpRight size={13}/></a></div></div></footer>
+  <footer className="footer"><div className="container footer-grid"><div><Link href={"/"+lang} className="footer-brand"><Droplets size={23}/> WaterWise Egypt</Link><p>{tr.footer}</p><p className="mini">{tr.disclaimer}</p></div><div className="footer-nav"><Link href={"/"+lang+"/research"}>{tr.nav.research}</Link><Link href={"/"+lang+"/team"}>{tr.nav.team}</Link><Link href={"/"+lang+"/tools"}>{tr.nav.tools}</Link><Link href={"/"+lang+"/privacy"}><Shield size={16}/>{lang==="ar"?"الخصوصية":"Privacy"}</Link></div></div></footer>
  </div>;
 }

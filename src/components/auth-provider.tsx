@@ -24,10 +24,10 @@ export function AuthProvider({children}:{children:ReactNode}){
    if(person){
     stopProfile=onSnapshot(doc(db,"users",person.uid),snap=>{
       setProfile(snap.exists()?snap.data() as UserProfile:null);setProfileError(null);
-    },()=>{setProfileError("Unable to read your profile. Check Firestore permissions and connectivity.");});
+    },()=>{setProfileError("We could not load your account details. Check your connection and try again.");});
    }
    setInitializing(false);
-  },()=>{setInitializing(false);setProfileError("Authentication service is unavailable.");});
+  },()=>{setInitializing(false);setProfileError("Sign-in is currently unavailable. Please try again later.");});
   return()=>{stopProfile?.();stopAuth()};
  },[]);
  const logout=useCallback(async()=>{const auth=getFirebaseAuth();if(auth)await signOut(auth);},[]);

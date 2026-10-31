@@ -16,9 +16,9 @@ export function CloudSyncStatus({lang}:{lang:Lang}){
  return <div className={"notice "+(status==="failed"?"warning":"")}>
   {status==="failed"?<CloudOff size={17}/>:status==="synced"?<CheckCircle2 size={17}/>:<Cloud size={17}/>}
   {user&&profile?
-    status==="failed"?(ar?"فشلت المزامنة مع Firestore؛ البيانات محفوظة محليًا فقط. راجع الاتصال وقواعد البيانات.":"Firestore sync failed; data remain locally saved. Check connectivity and security rules."):
-    status==="synced"?(ar?"آخر تغيير اتزامن مع Firestore.":"Last change synchronized with Firestore."):
-    (ar?"حسابك متصل؛ التغييرات الجديدة هتتزامن مع Firestore بعد الحفظ.":"Signed-in changes will sync to Firestore after saving.")
-  :ar?"أنت حاليًا في وضع الحفظ المحلي، سجّل الدخول لحفظ البيانات على حسابك.":"You are using local-only storage. Sign in to sync activity to your account."}
+    status==="failed"?(ar?"تعذر حفظ آخر تغيير على حسابك. بياناتك موجودة على الجهاز؛ حاول تاني لما الاتصال يتحسن.":"Could not save the last change to your account. Your device copy is still available."):
+    status==="synced"?(ar?"آخر تغيير اتحفظ في حسابك بنجاح.":"Your latest change has been saved to your account."):
+    (ar?"نتائجك الجديدة بتتحفظ في حسابك لما تضغط حفظ.":"Your new results are saved to your account when you save them.")
+  :ar?"سجّل دخولك علشان تفضل إنجازاتك معاك على أي جهاز.":"Sign in to keep your achievements across your devices."}
  </div>;
 }

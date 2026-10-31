@@ -22,23 +22,23 @@ export const references = [
 ] as const;
 export const t = {
  ar:{
-  brand:"ووتر وايز مصر",tagline:"من الوعي إلى الفعل",nav:{home:"الرئيسية",tools:"حاسبة المياه",learn:"تعلّم واختبر",challenges:"التحديات",dashboard:"تقدمي",research:"الأبحاث",team:"فريق التطوير",login:"حسابي"},
+  brand:"ووتر وايز مصر",tagline:"من الوعي إلى الفعل",nav:{home:"الرئيسية",tools:"حاسبة المياه",learn:"تعلّم واختبر",challenges:"التحديات",dashboard:"إنجازاتي",research:"الأبحاث",team:"فريق التطوير",login:"حسابي"},
   pill:"مشروع جامعي قائم على الأبحاث • SDG 6",hero1:"كل نقطة مياه",hero2:"تفرق.",heroBody:"حوّل معرفتك بترشيد المياه إلى خطوات يومية واضحة، من غير أرقام وهمية أو وعود بتوفير غير مُقاس.",
   start:"احسب استخدامك",how:"اكتشف التحديات",note:"تقديرات توضيحية • مش قراءات عدادات",stat1:"أبحاث محكّمة",stat2:"لغات",stat3:"هدف رئيسي",
   featTitle:"أدوات بسيطة. أثر قابل للتقييم.",featBody:"نقيس التعلّم والتفاعل بوضوح، ونفصل التقدير عن الاستهلاك المقاس.",
   c1:"حاسبة استخدام المياه",c1d:"قدّر بعض أنشطتك اليومية بافتراضات معلنة.",c2:"فحص التسريبات",c2d:"قائمة خطوات يمكنك تنفيذها في المنزل.",c3:"اختبر معلوماتك",c3d:"أسئلة قبلية وبعدية لتقييم التعلّم.",c4:"تحديات شخصية",c4d:"اختَر عادة قابلة للتنفيذ وسجّل التزامك.",
   cardKicker:"اعرف أكثر",ctaTitle:"جاهز تبدأ بخطوة صغيرة؟",ctaBody:"ابدأ بتقدير بعض أنشطتك اليومية، ثم جرّب عادة ترشيد واحدة لمدة أسبوع.",ctaButton:"ابدأ الآن",
   footer:"مشروع طلابي | Alamein International University",disclaimer:"جميع تقديرات الاستخدام تعليمية وليست قياسات مؤكدة من عداد مياه.",soon:"قريبًا",english:"English",
-  common:{intro:"بياناتك في المرحلة التجريبية محفوظة على المتصفح ده فقط.",back:"العودة للرئيسية",learnMore:"استكشف",source:"المصدر"}
+  common:{intro:"أنشطتك بتساعدك تشوف تقدّمك يومًا بعد يوم.",back:"العودة للرئيسية",learnMore:"استكشف",source:"المصدر"}
  },
  en:{
-  brand:"WaterWise Egypt",tagline:"From Awareness to Action",nav:{home:"Home",tools:"Water calculator",learn:"Learn & Quiz",challenges:"Challenges",dashboard:"My progress",research:"Research",team:"Development team",login:"My account"},
+  brand:"WaterWise Egypt",tagline:"From Awareness to Action",nav:{home:"Home",tools:"Water calculator",learn:"Learn & Quiz",challenges:"Challenges",dashboard:"My achievements",research:"Research",team:"Development team",login:"My account"},
   pill:"Research-led university project • SDG 6",hero1:"Every drop",hero2:"makes a difference.",heroBody:"Turn water-conservation knowledge into practical daily actions, without fabricated numbers or promises of unmeasured savings.",
   start:"Estimate your use",how:"Explore challenges",note:"Illustrative estimates • Not meter readings",stat1:"Peer-reviewed papers",stat2:"Languages",stat3:"Primary SDG",
   featTitle:"Simple tools. Meaningful evaluation.",featBody:"We track learning and engagement honestly, distinguishing estimates from measured consumption.",
   c1:"Water-use calculator",c1d:"Estimate selected daily activities with disclosed assumptions.",c2:"Leak checklist",c2d:"Practical steps you can complete at home.",c3:"Test your knowledge",c3d:"Pre- and post-quizzes to evaluate learning.",c4:"Personal challenges",c4d:"Choose an actionable habit and log your commitment.",
   cardKicker:"Explore",ctaTitle:"Ready for one small change?",ctaBody:"Estimate your everyday activities, then try one water-friendly habit for a week.",ctaButton:"Get started",
   footer:"Student project | Alamein International University",disclaimer:"All usage estimates are educational, not verified water-meter measurements.",soon:"Coming soon",english:"العربية",
-  common:{intro:"During this prototype stage, your data are saved only on this browser.",back:"Back home",learnMore:"Explore",source:"Source"}
+  common:{intro:"Keep track of your everyday progress.",back:"Back home",learnMore:"Explore",source:"Source"}
  }
 } as const;
