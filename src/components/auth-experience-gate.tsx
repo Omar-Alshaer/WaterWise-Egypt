@@ -15,7 +15,7 @@ const copy={
 export function AuthExperienceGate({lang,kind,children}:{lang:Lang;kind:Kind;children:ReactNode}){
  const {user,profile,initializing,profileError}=useAuth();
  const [open,setOpen]=useState(true);
- const close=useRef<HTMLButtonElement>(null),link=useRef<HTMLAnchorElement>(null);
+ const close=useRef<HTMLButtonElement>(null),link=useRef<HTMLAnchorElement>(null),later=useRef<HTMLButtonElement>(null);
  const eligible=Boolean(user&&profile);
  const needsProfile=Boolean(user&&!profile);
  const ar=lang==="ar",t=copy[kind][lang],Arrow=ar?ArrowLeft:ArrowRight;
@@ -27,8 +27,8 @@ export function AuthExperienceGate({lang,kind,children}:{lang:Lang;kind:Kind;chi
   const keys=(e:KeyboardEvent)=>{
    if(e.key==="Escape")setOpen(false);
    if(e.key==="Tab"){
-    if(e.shiftKey&&document.activeElement===close.current){e.preventDefault();link.current?.focus();}
-    else if(!e.shiftKey&&document.activeElement===link.current){e.preventDefault();close.current?.focus();}
+    if(e.shiftKey&&document.activeElement===close.current){e.preventDefault();later.current?.focus();}
+    else if(!e.shiftKey&&document.activeElement===later.current){e.preventDefault();close.current?.focus();}
    }
   };
   window.addEventListener("keydown",keys);
@@ -49,7 +49,7 @@ export function AuthExperienceGate({lang,kind,children}:{lang:Lang;kind:Kind;chi
      <span className="ww-gate-eyebrow"><Sparkles size={15}/>{t.eyebrow}</span>
      <h2 id={"ww-"+kind+"-title"}>{t.title}</h2><p id={"ww-"+kind+"-desc"}>{t.body}</p>
      <Link ref={link} href={redirect} className="ww-gate-action">{needsProfile?(ar?"إكمال بيانات حسابي":"Complete my profile"):(ar?"سجّل دخولك وابدأ":"Sign in to get started")}<Arrow size={18}/></Link>
-     <button type="button" className="ww-gate-later" onClick={()=>setOpen(false)}>{ar?"هتفرج الأول":"I'll look around first"}</button>
+     <button ref={later} type="button" className="ww-gate-later" onClick={()=>setOpen(false)}>{ar?"هتفرج الأول":"I'll look around first"}</button>
     </div>
    </div>}
  </section>;

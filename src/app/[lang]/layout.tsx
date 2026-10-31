@@ -3,6 +3,7 @@ import "../polish.css";
 import "../experience.css";
 import "../brand-refresh.css";
 import "../final-polish.css";
+import "../qa-refinements.css";
 import {notFound} from "next/navigation";
 import type {Metadata} from "next";
 import {isLang} from "@/lib/content";

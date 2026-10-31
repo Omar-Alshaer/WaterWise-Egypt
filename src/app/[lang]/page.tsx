@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import {MascotCorner} from "@/components/mascot-corner";
 import {Droplet,ArrowUpRight,BookOpen,Calculator,ClipboardCheck,Trophy,ArrowRight,ArrowLeft,Waves,Leaf,ShieldCheck,Sparkles,MoveDown,Target,ChartNoAxesCombined,ArrowUp} from "lucide-react";
 import {isLang,t} from "@/lib/content";
 import {notFound} from "next/navigation";
@@ -48,10 +49,10 @@ export default async function Home({params}:{params:Promise<{lang:string}>}){
    <div className="ww-hero-pillars"><span><BookOpen size={17}/>{ar?"اتعلّم":"Learn"}</span><span><ChartNoAxesCombined size={17}/>{ar?"افهم":"Understand"}</span><span><Trophy size={17}/>{ar?"أنجز":"Achieve"}</span></div>
   </div>
  </section>
- <section className="features section ww-home-features"><div className="container">
+ <section className="features section ww-home-features ww-feature-mascot-host"><MascotCorner pose="thinking" className="ww-home-feature-character"/><div className="container">
   <div className="section-head" data-reveal><div><span className="section-kicker"><Sparkles size={16}/>{ar?"ابدأ رحلتك":"THE WATERWISE EXPERIENCE"}</span><h2>{tr.featTitle}</h2><p>{tr.featBody}</p></div><div className="section-icon"><Leaf size={26}/></div></div>
   <div className="feature-grid">{cards.map(card=><Link href={"/"+lang+card.href} className="feature-card" key={card.num} data-reveal><span className="feature-no">{card.num}</span><span className="feature-icon"><card.icon size={26}/></span><h3>{card.title}</h3><p>{card.body}</p><span className="feature-link">{tr.common.learnMore}<Arrow size={18}/></span></Link>)}</div>
  </div></section>
- <section className="section ww-home-bridge"><div className="container"><div className="ww-home-bridge-inner" data-reveal><span className="ww-bridge-number">06</span><div><span className="ww-bridge-kicker">{ar?"الهدف السادس من أهداف التنمية المستدامة":"SUSTAINABLE DEVELOPMENT GOAL 06"}</span><h2>{ar?"مستقبل المياه يبدأ بعاداتنا النهارده.":"Tomorrow's water future starts with today's habits."}</h2><p>{ar?"شاركنا رحلة بسيطة للتعلّم والتجربة، وخلي كل اختيار واعي خطوة في الاتجاه الصح.":"Explore, learn and build thoughtful habits — one decision at a time."}</p></div><Link href={"/"+lang+"/challenges"} className="ww-bridge-action" aria-label={ar?"ابدأ التحديات":"Start challenges"}><Arrow size={28}/></Link></div></div></section>
+ <section className="section ww-home-bridge ww-bridge-mascot-host"><div className="container"><div className="ww-home-bridge-inner" data-reveal><MascotCorner pose="protecting-water" className="ww-bridge-character"/><span className="ww-bridge-number">06</span><div><span className="ww-bridge-kicker">{ar?"الهدف السادس من أهداف التنمية المستدامة":"SUSTAINABLE DEVELOPMENT GOAL 06"}</span><h2>{ar?"مستقبل المياه يبدأ بعاداتنا النهارده.":"Tomorrow's water future starts with today's habits."}</h2><p>{ar?"شاركنا رحلة بسيطة للتعلّم والتجربة، وخلي كل اختيار واعي خطوة في الاتجاه الصح.":"Explore, learn and build thoughtful habits — one decision at a time."}</p></div><Link href={"/"+lang+"/challenges"} className="ww-bridge-action" aria-label={ar?"ابدأ التحديات":"Start challenges"}><Arrow size={28}/></Link></div></div></section>
  </>;
 }

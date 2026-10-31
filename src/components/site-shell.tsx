@@ -7,6 +7,7 @@ import {Lang,t} from "@/lib/content";
 import {useAuth} from "./auth-provider";
 import {ScrollReveal} from "./scroll-reveal";
 import {RouteMotion} from "./route-motion";
+import {MascotCorner} from "./mascot-corner";
 export function SiteShell({lang,children}:{lang:Lang;children:React.ReactNode}){
  const [open,setOpen]=useState(false);
  const path=usePathname(),tr=t[lang],other=lang==="ar"?"en":"ar",ar=lang==="ar",Arrow=ar?ArrowLeft:ArrowRight;
@@ -25,9 +26,9 @@ export function SiteShell({lang,children}:{lang:Lang;children:React.ReactNode}){
     <Link className="lang-switch" aria-label="Switch language" href={"/"+other+path.replace(/^\/(ar|en)/,"")}><Languages size={17}/>{tr.english}</Link>
     <Link className="login-link" href={"/"+lang+(user?"/account":"/login")} aria-label={profile?profile.displayName:tr.nav.login}>{picture?<img className="nav-avatar" src={picture} referrerPolicy="no-referrer" alt=""/>:<UserRound size={17}/>}<span>{profile?profile.displayName.split(" ")[0]:tr.nav.login}</span></Link>
     <button className="menu-btn" type="button" aria-controls="primary-navigation" aria-expanded={open} aria-label={open?"Close menu":"Open menu"} onClick={()=>setOpen(!open)}>{open?<X/>:<Menu/>}</button>
-   </div></div></header>
+   </div></div><MascotCorner pose="welcome" className="ww-header-character"/></header>
   <main id="main-content" className="ww-route-content" key={path}>{children}</main>
-  <footer className="footer ww-footer">
+  <footer className="footer ww-footer"><MascotCorner pose="pointing-left" className="ww-footer-character"/>
    <div className="ww-footer-glow" aria-hidden="true"/>
    <div className="container ww-footer-container">
     <div className="ww-footer-top" data-reveal>

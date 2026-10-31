@@ -1,4 +1,6 @@
 import Link from "next/link";
+import {MascotCorner} from "@/components/mascot-corner";
+import {AboutContextGuard} from "@/components/about-context-guard";
 import {notFound} from "next/navigation";
 import {existsSync} from "node:fs";
 import path from "node:path";
@@ -14,8 +16,8 @@ export default async function AboutPage({params}:{params:Promise<{lang:string}>}
   {Icon:Target,title:ar?"التجربة":"Practice",body:ar?"حاسبة مبسطة وتحديات وفحص للتسريبات يشجعوك تبدأ بخطوات صغيرة.":"A friendly calculator, challenges and leak checks to help you get started."},
   {Icon:BookOpenCheck,title:ar?"التعلّم":"Learning",body:ar?"اختبار قبل التعلّم وبعده علشان تشوف تطور معلوماتك بدون مبالغة في النتائج.":"Before-and-after quizzes to see what you learned without overstating the impact."},
  ];
- return <div className="ww-about">
-  <section className="ww-about-hero">
+ return <div className="ww-about"><AboutContextGuard/>
+  <section className="ww-about-hero"><MascotCorner pose="welcome" className="ww-about-hero-character"/>
    <div className="container ww-about-hero-inner">
     <div className="ww-about-hero-copy" data-reveal>
      <span className="ww-about-eyebrow"><Sparkles size={16}/>{ar?"قصة WATERWISE":"THE WATERWISE STORY"}</span>
@@ -27,7 +29,7 @@ export default async function AboutPage({params}:{params:Promise<{lang:string}>}
    </div>
   </section>
   <div className="container ww-about-body">
-   <section className="ww-about-overview" data-reveal>
+   <section className="ww-about-overview" data-reveal><MascotCorner pose="thinking" className="ww-about-overview-character"/>
     <div className="ww-about-title"><span className="ww-section-label"><Leaf size={17}/>{ar?"ليه WaterWise؟":"WHY WATERWISE?"}</span><h2>{ar?"مش بس نتكلم عن المياه، نبدأ نتصرف.":"Beyond awareness. Toward action."}</h2><p>{ar?"المشروع بيجمع بين المعرفة والأدوات التفاعلية، من غير ما يخلط بين التقديرات وقياسات استهلاك المياه الحقيقية.":"Our project connects knowledge with interactive tools, keeping estimates clearly separate from actual measured water use."}</p></div>
     <div className="ww-about-value-grid">{sections.map(({Icon,title,body},i)=><article className="ww-about-value" key={title} data-reveal><span className="ww-about-value-number">0{i+1}</span><div className="ww-about-value-icon"><Icon size={27}/></div><h3>{title}</h3><p>{body}</p></article>)}</div>
    </section>
@@ -46,8 +48,8 @@ export default async function AboutPage({params}:{params:Promise<{lang:string}>}
       </div>
     </article>)}</div>
    </section>
-   <section id="project-report" className="ww-report-section" data-reveal>
-    <div className="ww-about-section-head"><div><span className="ww-section-label"><FileText size={17}/>{ar?"توثيق المشروع":"PROJECT DOCUMENTATION"}</span><h2>{ar?"ملف البحث النهائي":"Final research report"}</h2><p>{ar?"النسخة الأكاديمية من مشروع WaterWise Egypt هتظهر هنا مباشرة داخل الموقع بعد اعتمادها.":"The academic WaterWise Egypt report will appear directly here in the website once finalized."}</p></div></div>
+   <section id="project-report" className="ww-report-section" data-reveal><MascotCorner pose="protecting-water" className="ww-report-character"/>
+    <div className="ww-about-section-head"><div><span className="ww-section-label"><FileText size={17}/>{ar?"توثيق المشروع":"PROJECT DOCUMENTATION"}</span><h2>{ar?"ملف البحث النهائي":"Final research report"}</h2><p>{ar?"النسخة الأكاديمية من مشروع WaterWise Egypt متاحة للقراءة مباشرة داخل الموقع.":"The academic WaterWise Egypt report is available to read directly here on the website."}</p></div></div>
     <div className="ww-report-card">
      <div className="ww-report-topbar"><span><FileText size={19}/>{ar?"WaterWise Egypt — تقرير المشروع":"WaterWise Egypt — Project report"}</span><span className="ww-report-status">{reportAvailable?(ar?"الملف متاح للقراءة":"Available to read"):(ar?"قيد الإعداد":"In preparation")}</span></div>
      {reportAvailable?
