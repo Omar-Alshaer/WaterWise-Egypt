@@ -27,7 +27,7 @@ export function StartupSplash(){
  if(!visible)return null;
  return <div className="ww-splash" role="status" aria-live="polite" aria-label="Loading WaterWise Egypt">
   <div className="ww-splash-inner">
-   <Image src="/mascots/welcome.png" className="ww-splash-art ww-splash-mascot" width={190} height={190} alt="" priority unoptimized/>
+   <Image src="/mascots/welcome.png" className="ww-splash-art ww-splash-mascot" width={190} height={190} alt="" priority/>
    <strong className="ww-splash-title">WaterWise <span>Egypt</span></strong>
    <p className="ww-splash-tag">From Awareness to Action</p>
    <div className="ww-splash-indicator"><span/></div>

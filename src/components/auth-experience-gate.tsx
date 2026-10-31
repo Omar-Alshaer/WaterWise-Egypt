@@ -37,7 +37,7 @@ export function AuthExperienceGate({lang,kind,children}:{lang:Lang;kind:Kind;chi
  if(initializing||needsProfile&&!profileError)return <div className="ww-gate-loading" role="status"><span className="ww-gate-spinner"/>{ar?"بنجهّز تجربتك...":"Preparing your experience..."}</div>;
  if(eligible)return <>{children}</>;
  return <section className="ww-guest-stage">
-   <Image src={copy[kind].mascot} alt="" width={180} height={180} className="ww-guest-image" unoptimized/>
+   <Image src={copy[kind].mascot} alt="" width={180} height={180} className="ww-guest-image"/>
    <span className="ww-gate-eyebrow"><LockKeyhole size={15}/>{ar?"تجربة شخصية":"PERSONAL EXPERIENCE"}</span>
    <h2>{t.title}</h2><p>{t.body}</p>
    <Link href={redirect} className="ww-gate-action">{needsProfile?(ar?"إكمال بيانات حسابي":"Complete my profile"):(ar?"تسجيل الدخول أو إنشاء حساب":"Sign in or create account")}<Arrow size={19}/></Link>
@@ -45,7 +45,7 @@ export function AuthExperienceGate({lang,kind,children}:{lang:Lang;kind:Kind;chi
    {open&&<div className="ww-auth-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)setOpen(false);}}>
     <div className="ww-auth-dialog" role="dialog" aria-modal="true" aria-labelledby={"ww-"+kind+"-title"} aria-describedby={"ww-"+kind+"-desc"}>
      <button ref={close} type="button" className="ww-auth-close" aria-label={ar?"إغلاق":"Close"} onClick={()=>setOpen(false)}><X size={21}/></button>
-     <Image src={copy[kind].mascot} alt="" width={215} height={215} unoptimized className="ww-auth-mascot"/>
+     <Image src={copy[kind].mascot} alt="" width={215} height={215} className="ww-auth-mascot"/>
      <span className="ww-gate-eyebrow"><Sparkles size={15}/>{t.eyebrow}</span>
      <h2 id={"ww-"+kind+"-title"}>{t.title}</h2><p id={"ww-"+kind+"-desc"}>{t.body}</p>
      <Link ref={link} href={redirect} className="ww-gate-action">{needsProfile?(ar?"إكمال بيانات حسابي":"Complete my profile"):(ar?"سجّل دخولك وابدأ":"Sign in to get started")}<Arrow size={18}/></Link>

@@ -114,3 +114,8 @@
  .site .ww-auth-dialog{animation:none}
  .site .ww-gate-action,.site .btn{transition:none!important}
 }
+
+/* Route transitions are non-blocking: content is interactive immediately. */
+.site .ww-route-progress{position:fixed;inset:0 0 auto;height:3px;z-index:350;pointer-events:none;opacity:0;transform:scaleX(0);transform-origin:inline-start;background:linear-gradient(90deg,#1a8cb7,#69e9d4);box-shadow:0 0 13px #27d4c670;transition:opacity .2s,transform .54s cubic-bezier(.16,.75,.4,1)}
+.site .ww-route-progress.ww-route-progress-active{opacity:1;transform:scaleX(1)}
+@media(prefers-reduced-motion:reduce){.site .ww-route-progress{display:none}}

@@ -18,7 +18,6 @@ export function generateMetadata({params}: {params:Promise<{lang:string}>}):Prom
    description,
    applicationName:"WaterWise Egypt",
    metadataBase:new URL("https://wwe.alamein.site"),
-   alternates:{canonical:"/"+(ar?"ar":"en"),languages:{"ar-EG":"/ar","en-US":"/en","x-default":"/ar"}},
    openGraph:{type:"website",siteName:"WaterWise Egypt",title,description,url:"https://wwe.alamein.site/"+(ar?"ar":"en"),locale:ar?"ar_EG":"en_US",alternateLocale:ar?"en_US":"ar_EG",images:[{url:"/brand/og-image.png",alt:"WaterWise Egypt — From Awareness to Action"}]},
    twitter:{card:"summary_large_image",title,description,images:["/brand/og-image.png"]},
    icons:{icon:[{url:"/icon.svg",type:"image/svg+xml"},{url:"/mascots/welcome.png",type:"image/png",sizes:"1254x1254"}],apple:[{url:"/mascots/welcome.png",sizes:"1254x1254",type:"image/png"}]},

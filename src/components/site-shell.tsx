@@ -6,6 +6,7 @@ import {Droplets,Menu,X,Languages,Waves,UserRound,Shield,ArrowLeft,ArrowRight,Ar
 import {Lang,t} from "@/lib/content";
 import {useAuth} from "./auth-provider";
 import {ScrollReveal} from "./scroll-reveal";
+import {RouteMotion} from "./route-motion";
 export function SiteShell({lang,children}:{lang:Lang;children:React.ReactNode}){
  const [open,setOpen]=useState(false);
  const path=usePathname(),tr=t[lang],other=lang==="ar"?"en":"ar",ar=lang==="ar",Arrow=ar?ArrowLeft:ArrowRight;
@@ -15,7 +16,7 @@ export function SiteShell({lang,children}:{lang:Lang;children:React.ReactNode}){
  useEffect(()=>{setOpen(false);},[path]);
  const links=[["",tr.nav.home],["tools",tr.nav.tools],["learn",tr.nav.learn],["challenges",tr.nav.challenges],["research",tr.nav.research],["about",tr.nav.team]] as const;
  return <div className="site" dir={ar?"rtl":"ltr"} lang={lang}>
-  <ScrollReveal path={path}/>
+  <ScrollReveal path={path}/><RouteMotion/>
   <div className="announcement"><Waves size={15}/><span>{ar?"المياه مورد مشترك، وكل عادة صغيرة ممكن تبدأ فرق.":"Water is a shared resource. Change starts with small habits."}</span></div>
   <header className="header"><div className="container navrow">
    <Link href={"/"+lang} className="brand"><span className="brand-icon"><Droplets size={27} strokeWidth={2.5}/></span><span className="brand-text"><strong>WaterWise <em>Egypt</em></strong><small>{tr.tagline}</small></span></Link>
