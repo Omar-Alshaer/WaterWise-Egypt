@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {Droplet,ArrowUpRight,BookOpen,Calculator,ClipboardCheck,Trophy,ArrowRight,ArrowLeft,Waves,Leaf,ShieldCheck,Sparkles,MoveDown,Target,ChartNoAxesCombined,ArrowUp} from "lucide-react";
 import {isLang,t} from "@/lib/content";
 import {notFound} from "next/navigation";
@@ -33,7 +34,7 @@ export default async function Home({params}:{params:Promise<{lang:string}>}){
     <div className="ww-hero-orbit-dot dot-two"/>
     <div className="ww-hero-water-sphere">
      <div className="ww-sphere-highlight"/>
-     <svg className="ww-sphere-drop" viewBox="0 0 250 300" role="presentation"><defs><linearGradient id="ww-drop-shade" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#dcffff"/><stop offset=".45" stopColor="#8bf2ee"/><stop offset="1" stopColor="#12a9c1"/></linearGradient></defs><path d="M125 13C99 55 28 123 28 184a97 97 0 0 0 194 0c0-61-71-129-97-171Z" fill="url(#ww-drop-shade)"/><path d="M80 154c-11 21-16 36-15 56" stroke="#ffffffb9" strokeWidth="13" strokeLinecap="round" fill="none"/><path d="M151 62c23 29 43 58 51 80" stroke="#ffffff77" strokeWidth="6" strokeLinecap="round" fill="none"/></svg>
+     <Image src="/mascots/welcome.png" alt="" className="ww-sphere-drop ww-hero-mascot" width={330} height={330} priority/>
      <span className="ww-sphere-sparkle sparkle-a"><Sparkles size={24}/></span>
      <span className="ww-sphere-sparkle sparkle-b"><Sparkles size={17}/></span>
     </div>

@@ -2,6 +2,7 @@ import {notFound} from "next/navigation";
 import {isLang} from "@/lib/content";
 import {PageHero} from "@/components/page-hero";
 import {QuizWidget} from "@/components/prototype-widgets";
+import {AuthExperienceGate} from "@/components/auth-experience-gate";
 import {BookOpen,ShieldCheck,Droplets,Lightbulb} from "lucide-react";
 export default async function Learn({params}:{params:Promise<{lang:string}>}){
  const {lang}=await params;if(!isLang(lang))notFound();const ar=lang==="ar";
@@ -15,6 +16,6 @@ export default async function Learn({params}:{params:Promise<{lang:string}>}){
   <section aria-labelledby="learn-lessons-title"><div className="learn-section-title"><span className="tag"><Lightbulb size={16}/>{ar?"اعرف أكتر":"QUICK LESSONS"}</span><h2 id="learn-lessons-title">{ar?"3 أفكار تستاهل تعرفها":"Three ideas worth knowing"}</h2><p>{ar?"خطوات واقعية تقدر تبدأ بيها في البيت.":"Practical habits you can start at home."}</p></div>
    <div className="learn-lesson-grid">{lessons.map(({Icon,title,copy},i)=><article className="learn-lesson-card" key={title}><span className="learn-lesson-num">{String(i+1).padStart(2,"0")}</span><div className="learn-lesson-icon"><Icon size={26}/></div><h3>{title}</h3><p>{copy}</p></article>)}</div>
   </section>
-  <section className="learn-quiz-section" aria-label={ar?"الاختبارات":"Quizzes"}><QuizWidget lang={lang}/></section>
+  <section className="learn-quiz-section" aria-label={ar?"الاختبارات":"Quizzes"}><AuthExperienceGate lang={lang} kind="learning"><QuizWidget lang={lang}/></AuthExperienceGate></section>
  </div></>;
 }

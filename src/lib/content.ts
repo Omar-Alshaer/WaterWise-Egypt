@@ -22,7 +22,7 @@ export const references = [
 ] as const;
 export const t = {
  ar:{
-  brand:"ووتر وايز مصر",tagline:"من الوعي إلى الفعل",nav:{home:"الرئيسية",tools:"حاسبة المياه",learn:"تعلّم واختبر",challenges:"التحديات",dashboard:"إنجازاتي",research:"الأبحاث",team:"حول المشروع",login:"حسابي"},
+  brand:"ووتر وايز مصر",tagline:"من الوعي إلى الفعل",nav:{home:"الرئيسية",tools:"حاسبة المياه",learn:"تعلّم واختبر",challenges:"التحديات",dashboard:"حسابي",research:"الأبحاث",team:"حول المشروع",login:"حسابي"},
   pill:"مشروع جامعي قائم على الأبحاث • SDG 6",hero1:"كل نقطة مياه",hero2:"تفرق.",heroBody:"حوّل معرفتك بترشيد المياه إلى خطوات يومية واضحة، من غير أرقام وهمية أو وعود بتوفير غير مُقاس.",
   start:"احسب استخدامك",how:"اكتشف التحديات",note:"تقديرات توضيحية • مش قراءات عدادات",stat1:"أبحاث محكّمة",stat2:"لغات",stat3:"هدف رئيسي",
   featTitle:"أدوات بسيطة. أثر قابل للتقييم.",featBody:"نقيس التعلّم والتفاعل بوضوح، ونفصل التقدير عن الاستهلاك المقاس.",
@@ -32,7 +32,7 @@ export const t = {
   common:{intro:"أنشطتك بتساعدك تشوف تقدّمك يومًا بعد يوم.",back:"العودة للرئيسية",learnMore:"استكشف",source:"المصدر"}
  },
  en:{
-  brand:"WaterWise Egypt",tagline:"From Awareness to Action",nav:{home:"Home",tools:"Water calculator",learn:"Learn & Quiz",challenges:"Challenges",dashboard:"My achievements",research:"Research",team:"About",login:"My account"},
+  brand:"WaterWise Egypt",tagline:"From Awareness to Action",nav:{home:"Home",tools:"Water calculator",learn:"Learn & Quiz",challenges:"Challenges",dashboard:"My account",research:"Research",team:"About",login:"My account"},
   pill:"Research-led university project • SDG 6",hero1:"Every drop",hero2:"makes a difference.",heroBody:"Turn water-conservation knowledge into practical daily actions, without fabricated numbers or promises of unmeasured savings.",
   start:"Estimate your use",how:"Explore challenges",note:"Illustrative estimates • Not meter readings",stat1:"Peer-reviewed papers",stat2:"Languages",stat3:"Primary SDG",
   featTitle:"Simple tools. Meaningful evaluation.",featBody:"We track learning and engagement honestly, distinguishing estimates from measured consumption.",

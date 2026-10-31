@@ -16,10 +16,11 @@ export function getProgress():Progress {
 function emit(){if(typeof window!=="undefined")window.dispatchEvent(new Event("wwe-progress-updated"));}
 export function saveProgress(data:Partial<Progress>){
  if(typeof window==="undefined")return;
+ const user=getFirebaseAuth()?.currentUser,db=getFirebaseStore();
+ // Interactive actions require an authenticated account; never persist guest progress.
+ if(!user||!db)return;
  const latest={...getProgress(),...data};
  try{localStorage.setItem(storageKey(),JSON.stringify(latest));emit();}catch{}
- const user=getFirebaseAuth()?.currentUser,db=getFirebaseStore();
- if(!user||!db)return;
  // Only the fields managed by this feature are sent; never user roles or private data.
  setDoc(doc(db,"users",user.uid,"progress","current"),{...latest,updatedAt:serverTimestamp()},{merge:true})
   .then(()=>window.dispatchEvent(new CustomEvent("wwe-sync",{detail:"synced"})))
