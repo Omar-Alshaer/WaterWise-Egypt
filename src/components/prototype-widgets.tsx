@@ -3,11 +3,8 @@ import {useEffect,useState} from "react";
 import {Droplets, CheckCircle2, BookOpen, Trophy, ArrowRight, ShieldAlert, BarChart3, ClipboardCheck, PartyPopper, Save, ShieldCheck, RotateCcw} from "lucide-react";
 import {Lang,t} from "@/lib/content";
 
-type Progress={estimate?:number;checked?:string[];challenges?:string[];pre?:number;post?:number};
-const KEY="wwe-prototype-v1";
-const getProgress=():Progress=>{if(typeof window==="undefined")return {};try{return JSON.parse(localStorage.getItem(KEY)||"{}") as Progress}catch{return {}}};
-function saveProgress(data:Partial<Progress>){if(typeof window==="undefined")return;try{localStorage.setItem(KEY,JSON.stringify({...getProgress(),...data}));window.dispatchEvent(new Event("wwe-progress-updated"))}catch{}}
-function useProgress(){const [data,setData]=useState<Progress>({});useEffect(()=>{const sync=()=>setData(getProgress());sync();window.addEventListener("wwe-progress-updated",sync);window.addEventListener("storage",sync);return()=>{window.removeEventListener("wwe-progress-updated",sync);window.removeEventListener("storage",sync)}},[]);return data}
+import {saveProgress,useProgress} from "@/lib/progress-cloud";
+import {useAuth} from "@/components/auth-provider";
 
 export function WaterCalculator({lang}:{lang:Lang}){
  const ar=lang==="ar";const [people,setPeople]=useState(3),[shower,setShower]=useState(8),[tap,setTap]=useState(3),[laundry,setLaundry]=useState(4),[saved,setSaved]=useState(false);
@@ -67,9 +64,9 @@ export function ChallengesWidget({lang}:{lang:Lang}){
  const ar=lang==="ar",p=useProgress(),completed=p.challenges||[];return <div className="stack">{habits.map(h=><div className="challenge-card" key={h.id}><div className="round-icon"><h.icon size={23}/></div><div className="challenge-body"><h3>{ar?h.ar:h.en}</h3><p>{ar?"سجّل تنفيذك ذاتيًا. ده مش إثبات لترات مياه وفّرتها.":"Log your action yourself. This is not proof of saved liters."}</p></div><button className={"btn "+(completed.includes(h.id)?"btn-secondary":"btn-primary")} onClick={()=>saveProgress({challenges:completed.includes(h.id)?completed.filter(x=>x!==h.id):[...completed,h.id]})}>{completed.includes(h.id)?<><CheckCircle2 size={16}/>{ar?"تم":"Done"}</>:<>{ar?"سجّل الإنجاز":"Mark done"}<ArrowRight size={16}/></>}</button></div>)}<div className="notice"><Trophy size={15}/> {ar?"الإنجازات المتسجلة هنا ذاتية ومتخزنة على جهازك فقط في المرحلة دي.":"Completed activities are self-reported and stored on your device only at this stage."}</div></div>;
 }
 export function ProgressWidget({lang}:{lang:Lang}){
- const ar=lang==="ar",p=useProgress();const checked=p.checked?.length||0,done=p.challenges?.length||0;
+ const ar=lang==="ar",p=useProgress();const {profile}=useAuth();const checked=p.checked?.length||0,done=p.challenges?.length||0;
  const metrics=[{label:ar?"التحديات المكتملة":"Completed challenges",value:done+"/4",icon:Trophy},{label:ar?"فحوص التسريب":"Leak checks",value:checked+"/4",icon:ClipboardCheck},{label:ar?"آخر تقدير":"Latest estimate",value:p.estimate===undefined?"—":p.estimate+" L/d",icon:Droplets}];
  return <div className="stack"><div className="metric-grid">{metrics.map(m=><div key={m.label} className="metric-card"><m.icon size={22}/><strong style={{fontSize:m.value.length>6?23:35}}>{m.value}</strong><span>{m.label}</span></div>)}</div>
  <div className="panel"><h2><BookOpen size={22} style={{verticalAlign:"middle",marginInlineEnd:8}}/>{ar?"تطور المعرفة":"Knowledge progress"}</h2><div className="metric-grid" style={{marginTop:20,gridTemplateColumns:"repeat(2,minmax(0,1fr))"}}><div className="metric-card"><span>{ar?"اختبار قبلي":"Pre-quiz"}</span><strong>{p.pre===undefined?"—":p.pre+"/5"}</strong></div><div className="metric-card"><span>{ar?"اختبار بعدي":"Post-quiz"}</span><strong>{p.post===undefined?"—":p.post+"/5"}</strong></div></div><p className="muted small" style={{marginTop:19}}>{ar?"الفرق بين الدرجتين يعكس تغيرًا محتملًا في نتيجة الاختبار فقط، مش إثبات تغير سلوك أو استهلاك.":"A score difference may reflect learning on this quiz only; it does not establish behavior change or measured conservation."}</p></div>
- <div className="notice warning"><ShieldAlert size={16}/> {ar?"إحصائيات محلية تجريبية: مفيش قاعدة بيانات أو مدير يقدر يشوف حسابك في النسخة دي.":"Local prototype metrics only: no backend account or admin can view your data in this version."}</div></div>;
+ <div className="notice warning"><ShieldAlert size={16}/> {ar?"النتائج تُحفظ محليًا؛ وعند تسجيل الدخول ووجود ملف شخصي يتم مزامنتها إلى Firestore. التقديرات ليست وفورات مقاسة.":"Activity is saved locally, and synchronized to Firestore when signed in with a completed profile. Estimates are not verified water savings."}</div></div>;
 }

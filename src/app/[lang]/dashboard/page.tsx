@@ -1,2 +1,10 @@
-import {notFound} from "next/navigation";import {isLang} from "@/lib/content";import {PageHero} from "@/components/page-hero";import {ProgressWidget} from "@/components/prototype-widgets";import {AccountStatus} from "@/components/account-status";
-export default async function Dashboard({params}:{params:Promise<{lang:string}>}){const {lang}=await params;if(!isLang(lang))notFound();const ar=lang==="ar";return <><PageHero lang={lang} kicker="MY PROGRESS" title={ar?"لوحة تقدمك":"Your personal progress"} description={ar?"ملخص لأنشطتك ونتائج اختباراتك على نفس الجهاز؛ ربط نتائج الأدوات بحسابك على Firestore هيكون في Batch 3.":"Local activity and quiz results on this device. Cloud persistence for tool results is scheduled for Batch 3."}/><div className="container page-content dashboard-layout"><AccountStatus lang={lang}/><ProgressWidget lang={lang}/></div></>}
+import {notFound} from "next/navigation";
+import {isLang} from "@/lib/content";
+import {PageHero} from "@/components/page-hero";
+import {ProgressWidget} from "@/components/prototype-widgets";
+import {AccountStatus} from "@/components/account-status";
+import {AccountDeletion} from "@/components/account-deletion";
+export default async function Dashboard({params}:{params:Promise<{lang:string}>}){
+ const {lang}=await params;if(!isLang(lang))notFound();const ar=lang==="ar";
+ return <><PageHero lang={lang} kicker="MY PROGRESS" title={ar?"لوحة تقدمك":"Your personal progress"} description={ar?"نتائج الحاسبة والاختبارات والتحديات المُبلغ عنها ذاتيًا. بعد تسجيل الدخول يتم حفظ البيانات السحابية في حسابك.":"Calculator estimates, quiz scores and self-reported challenges. Signed-in activity is synchronized to your private Firestore record."}/><div className="container page-content dashboard-layout"><AccountStatus lang={lang}/><ProgressWidget lang={lang}/><AccountDeletion lang={lang}/></div></>;
+}
