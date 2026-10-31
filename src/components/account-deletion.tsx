@@ -1,5 +1,6 @@
 "use client";
-import {useState} from "react";import {deleteUser,getIdToken,signOut} from "firebase/auth";
+import {useState} from "react";import {getIdToken,signOut} from "firebase/auth";
+import {getFirebaseAuth} from "@/lib/firebase";
 import {Trash2,ShieldAlert} from "lucide-react";
 import {useAuth} from "./auth-provider";
 import type {Lang} from "@/lib/content";
@@ -13,7 +14,7 @@ export function AccountDeletion({lang}:{lang:Lang}){
    const token=await getIdToken(user,true);
    const r=await fetch("/api/account/delete",{method:"POST",headers:{Authorization:"Bearer "+token}});
    if(!r.ok){const body=await r.json();throw new Error(body.error||"Deletion failed");}
-   await signOut(user.auth);
+   const auth=getFirebaseAuth();if(auth)await signOut(auth);
    try{localStorage.removeItem("wwe-progress-user-"+user.uid);}catch{}
    window.location.assign("/"+lang);
   }catch(e){setError(e instanceof Error?e.message:"Deletion failed");setBusy(false);}
