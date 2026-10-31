@@ -1,5 +1,6 @@
 "use client";
 import {useEffect,useState,type CSSProperties} from "react";
+import {createPortal} from "react-dom";
 import Link from "next/link";
 import {Droplets,CheckCircle2,BookOpen,Trophy,ArrowRight,ShieldAlert,BarChart3,ClipboardCheck,PartyPopper,Save,ShieldCheck,Plus,Minus,Sparkles,X,ArrowLeft,Target} from "lucide-react";
 import type {Lang} from "@/lib/content";
@@ -95,7 +96,11 @@ const habits=[
 export function ChallengesWidget({lang}:{lang:Lang}){
  const ar=lang==="ar",p=useProgress(),completed=p.challenges||[];
  const [celebrate,setCelebrate]=useState<string|null>(null);
- useEffect(()=>{if(!celebrate)return;const onKey=(e:KeyboardEvent)=>{if(e.key==="Escape")setCelebrate(null);};window.addEventListener("keydown",onKey);return()=>window.removeEventListener("keydown",onKey);},[celebrate]);
+ const [portalHost,setPortalHost]=useState<Element|null>(null);
+ useEffect(()=>{setPortalHost(document.querySelector(".site"));},[]);
+ useEffect(()=>{if(!celebrate)return;
+  const priorOverflow=document.body.style.overflow;document.body.style.overflow="hidden";
+  const onKey=(e:KeyboardEvent)=>{if(e.key==="Escape")setCelebrate(null);};window.addEventListener("keydown",onKey);return()=>{document.body.style.overflow=priorOverflow;window.removeEventListener("keydown",onKey)};},[celebrate]);
  const current=habits.find(h=>h.id===celebrate);
  const toggle=(id:string)=>{const wasCompleted=completed.includes(id);saveProgress({challenges:wasCompleted?completed.filter(x=>x!==id):[...completed,id]});if(!wasCompleted)setCelebrate(id);};
  return <div className="challenge-experience">
@@ -107,7 +112,7 @@ export function ChallengesWidget({lang}:{lang:Lang}){
     <button type="button" className={"habit-button"+(done?" done":"")} onClick={()=>toggle(h.id)}>{done?<><CheckCircle2 size={19}/>{ar?"اكتمل — تعديل":"Completed — undo"}</>:<>{ar?"أنجزت التحدي!":"I did it!"}<ArrowRight size={18}/></>}</button>
    </article>;})}</div>
   <div className="challenge-tip"><ShieldCheck size={19}/>{ar?"الإنجازات دي بتعتمد على تسجيلك الشخصي، مش قياس فعلي لكمية المياه.":"These milestones are based on your own check-ins, not metered water savings."}</div>
-  {current&&<div className="celebration-overlay" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)setCelebrate(null);}}>
+  {current&&portalHost&&createPortal(<div className="celebration-overlay" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)setCelebrate(null);}}>
    <div className="confetti-field" aria-hidden="true">{Array.from({length:44},(_,i)=><span className="confetti-piece" key={i} style={{left:(i*37%94+3)+"%",animationDelay:((i%8)*0.065)+"s",animationDuration:(1.9+(i%6)*0.21)+"s",backgroundColor:["#20b8c4","#ffd05a","#fa809d","#5b9fef","#84d6a3","#b7a1ee"][i%6],["--drift" as string]:((i*43%220)-110)+"px"} as CSSProperties}/>)}</div>
    <div role="dialog" aria-modal="true" aria-labelledby="celebration-title" aria-describedby="celebration-desc" className="celebration-dialog">
     <button type="button" className="celebration-close" aria-label={ar?"إغلاق":"Close"} onClick={()=>setCelebrate(null)}><X size={21}/></button>
@@ -115,7 +120,7 @@ export function ChallengesWidget({lang}:{lang:Lang}){
     <h2 id="celebration-title">{ar?"برافو عليك! 🎉":"You did it! 🎉"}</h2><p id="celebration-desc">{ar?current.ar:current.en}</p><div className="celebration-total"><CheckCircle2 size={18}/>{completed.length} / 4 {ar?"تحديات أنجزتها":"challenges completed"}</div>
     <button type="button" className="btn btn-primary" onClick={()=>setCelebrate(null)}>{ar?"يلا نكمل":"Keep going"}<ArrowLeft size={18}/></button>
    </div>
-  </div>}
+  </div>,portalHost)}
  </div>;
 }
 export function ProgressWidget({lang}:{lang:Lang}){
